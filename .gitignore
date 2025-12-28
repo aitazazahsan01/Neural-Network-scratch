@@ -28,3 +28,8 @@ ENV/
 # Test artifacts
 examples/_verify_*.py
 examples/xor_loss_comparison.png
+examples/xor_boundary.png
+examples/binary_history.png
+examples/binary_boundary.png
+examples/overfitting_comparison.png
+examples/optimizer_comparison.png
