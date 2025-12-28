@@ -38,3 +38,8 @@ examples/mnist_history.png
 examples/mnist_predictions.png
 examples/mnist_weights.png
 
+# scikit-learn dataset cache
+~/scikit_learn_data/
+
+# OS
+Thumbs.db
