@@ -33,3 +33,8 @@ examples/binary_history.png
 examples/binary_boundary.png
 examples/overfitting_comparison.png
 examples/optimizer_comparison.png
+examples/mnist_confusion.png
+examples/mnist_history.png
+examples/mnist_predictions.png
+examples/mnist_weights.png
+
