@@ -23,3 +23,8 @@ ENV/
 .DS_Store
 
 # Jupyter
+.ipynb_checkpoints/
+
+# Test artifacts
+examples/_verify_*.py
+examples/xor_loss_comparison.png
