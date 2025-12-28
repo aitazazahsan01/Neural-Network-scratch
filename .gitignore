@@ -18,3 +18,8 @@ ENV/
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+.DS_Store
+
+# Jupyter
