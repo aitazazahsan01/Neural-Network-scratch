@@ -52,3 +52,30 @@ from neuralnet.utils.visualizer import plot_history, plot_decision_boundary
 # Data
 # ---------------------------------------------------------------------------
 
+# XOR truth table — all 4 combinations
+X = np.array([
+    [0, 0],
+    [0, 1],
+    [1, 0],
+    [1, 1],
+], dtype=float)
+
+y = np.array([[0], [1], [1], [0]], dtype=float)  # shape (4, 1)
+
+print("XOR Problem")
+print("=" * 40)
+print("Input X:")
+print(X)
+print("\nLabels y (XOR):")
+print(y.ravel())
+
+
+# ---------------------------------------------------------------------------
+# Experiment 1: Linear model (single layer) — should FAIL
+# ---------------------------------------------------------------------------
+
+print("\n" + "=" * 40)
+print("EXPERIMENT 1: Single-Layer (Linear) Model")
+print("This CANNOT solve XOR — watch the loss stall!")
+print("=" * 40)
+
