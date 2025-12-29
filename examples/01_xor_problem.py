@@ -106,3 +106,30 @@ print("\n" + "=" * 40)
 print("EXPERIMENT 2: Two-Layer Network (Hidden Layer)")
 print("This CAN solve XOR via non-linear transformation!")
 print("=" * 40)
+
+np.random.seed(42)  # reproducibility
+
+model = Sequential([
+    DenseLayer(4,  activation="tanh",    name="Hidden"),
+    DenseLayer(1,  activation="sigmoid", name="Output"),
+])
+model.compile(loss="bce", optimizer="adam", learning_rate=0.05)
+model.summary()
+
+history = model.fit(
+    X, y,
+    epochs=3000,
+    batch_size=-1,   # full-batch (tiny dataset)
+    verbose=1,
+    verbose_every=300,
+)
+
+# ---------------------------------------------------------------------------
+# Results
+# ---------------------------------------------------------------------------
+
+print("\nFinal predictions vs ground truth:")
+preds = model.predict(X)
+all_correct = True
+for xi, pi, yi in zip(X, preds.ravel(), y.ravel()):
+    predicted_class = int(round(float(pi)))
