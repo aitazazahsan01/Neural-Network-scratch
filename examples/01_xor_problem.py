@@ -160,3 +160,30 @@ output = model.layers[1]
 print(f"\nHidden layer weights W  (shape {hidden.W.shape}):")
 print(np.round(hidden.W, 4))
 print(f"\nHidden layer biases  b  (shape {hidden.b.shape}):")
+print(np.round(hidden.b, 4))
+
+print(f"\nOutput layer weights W  (shape {output.W.shape}):")
+print(np.round(output.W, 4))
+print(f"\nOutput layer bias    b  (shape {output.b.shape}):")
+print(np.round(output.b, 4))
+
+print("\n(The hidden layer transforms the non-linearly-separable XOR inputs")
+print("into a higher-dimensional space where the output layer CAN draw a")
+print("straight line to separate them — this is the key insight!)")
+
+
+# ---------------------------------------------------------------------------
+# Plotting
+# ---------------------------------------------------------------------------
+
+# Training curves comparison
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+fig.suptitle("XOR Problem — Training Comparison", fontsize=14, fontweight="bold")
+
+epochs_range = range(1, 3001)
+
+ax = axes[0]
+ax.plot(history_linear["train_loss"], color="#F44336", linewidth=2, label="Linear (1 layer)")
+ax.plot(history["train_loss"],        color="#4CAF50", linewidth=2, label="Network (2 layers)")
+ax.set_xlabel("Epoch")
+ax.set_ylabel("BCE Loss")
