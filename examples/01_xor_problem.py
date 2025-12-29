@@ -133,3 +133,30 @@ preds = model.predict(X)
 all_correct = True
 for xi, pi, yi in zip(X, preds.ravel(), y.ravel()):
     predicted_class = int(round(float(pi)))
+    correct = "✓" if predicted_class == int(yi) else "✗"
+    if predicted_class != int(yi):
+        all_correct = False
+    print(f"  x={xi}  → ŷ={pi:.4f}  rounded={predicted_class}  (true={int(yi)}) {correct}")
+
+if all_correct:
+    print("\n✅ XOR SOLVED! The network learned a non-linear decision boundary.")
+else:
+    print("\n⚠  Not all samples correct. Try running again or increasing epochs.")
+
+final_loss = history["train_loss"][-1]
+print(f"\nFinal train loss: {final_loss:.6f}")
+
+
+# ---------------------------------------------------------------------------
+# Weight inspection: what did the hidden layer learn?
+# ---------------------------------------------------------------------------
+
+print("\n" + "=" * 40)
+print("WEIGHT INSPECTION — What did the hidden layer learn?")
+print("=" * 40)
+hidden = model.layers[0]
+output = model.layers[1]
+
+print(f"\nHidden layer weights W  (shape {hidden.W.shape}):")
+print(np.round(hidden.W, 4))
+print(f"\nHidden layer biases  b  (shape {hidden.b.shape}):")
