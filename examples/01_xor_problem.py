@@ -214,3 +214,4 @@ plot_decision_boundary(
     save_path=os.path.join(os.path.dirname(__file__), "xor_boundary.png"),
 )
 
+print("\nDone! Check examples/xor_loss_comparison.png and xor_boundary.png")
