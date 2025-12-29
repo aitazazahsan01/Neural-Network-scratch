@@ -187,3 +187,30 @@ ax.plot(history_linear["train_loss"], color="#F44336", linewidth=2, label="Linea
 ax.plot(history["train_loss"],        color="#4CAF50", linewidth=2, label="Network (2 layers)")
 ax.set_xlabel("Epoch")
 ax.set_ylabel("BCE Loss")
+ax.set_title("Loss Convergence")
+ax.legend()
+ax.grid(True, alpha=0.3)
+ax.set_yscale("log")
+
+ax = axes[1]
+ax.plot(history_linear["train_acc"], color="#F44336", linewidth=2, label="Linear (1 layer)")
+ax.plot(history["train_acc"],        color="#4CAF50", linewidth=2, label="Network (2 layers)")
+ax.set_xlabel("Epoch")
+ax.set_ylabel("Accuracy")
+ax.set_title("Accuracy")
+ax.set_ylim([0, 1.05])
+ax.legend()
+ax.grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.savefig(os.path.join(os.path.dirname(__file__), "xor_loss_comparison.png"), dpi=150)
+plt.show()
+
+# Decision boundary
+plot_decision_boundary(
+    model, X, y.ravel(),
+    title="XOR Decision Boundary (Two-Layer Network)",
+    resolution=400,
+    save_path=os.path.join(os.path.dirname(__file__), "xor_boundary.png"),
+)
+
