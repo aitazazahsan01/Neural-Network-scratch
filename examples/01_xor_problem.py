@@ -79,3 +79,30 @@ print("EXPERIMENT 1: Single-Layer (Linear) Model")
 print("This CANNOT solve XOR — watch the loss stall!")
 print("=" * 40)
 
+model_linear = Sequential([
+    DenseLayer(1, activation="sigmoid", name="Output"),
+])
+model_linear.compile(loss="bce", optimizer="adam", learning_rate=0.05)
+history_linear = model_linear.fit(
+    X, y,
+    epochs=3000,
+    batch_size=-1,   # full-batch (tiny dataset)
+    verbose=1,
+    verbose_every=500,
+)
+
+preds_linear = model_linear.predict(X)
+print("\nLinear model predictions (should be wrong for XOR):")
+for xi, pi, yi in zip(X, preds_linear.ravel(), y.ravel()):
+    correct = "✓" if round(float(pi)) == int(yi) else "✗"
+    print(f"  x={xi}  → ŷ={pi:.4f}  (true={int(yi)}) {correct}")
+
+
+# ---------------------------------------------------------------------------
+# Experiment 2: Two-layer network with hidden layer — should SUCCEED
+# ---------------------------------------------------------------------------
+
+print("\n" + "=" * 40)
+print("EXPERIMENT 2: Two-Layer Network (Hidden Layer)")
+print("This CAN solve XOR via non-linear transformation!")
+print("=" * 40)
