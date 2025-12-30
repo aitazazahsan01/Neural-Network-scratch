@@ -74,3 +74,41 @@ print(f"Class distribution: {int(y_raw.sum())} positives, {int(len(y_raw)-y_raw.
 # ---------------------------------------------------------------------------
 
 X_train_raw, X_val_raw, y_train, y_val = train_val_split(
+    X_raw, y_raw, val_fraction=0.2, seed=42
+)
+
+# Standardise features using training set statistics
+# WHY? If feature scales differ greatly, gradient updates are dominated
+# by the large-scale feature → training is slow and unstable.
+X_train, mean, std = standardize(X_train_raw)
+X_val, _, _        = standardize(X_val_raw, X_ref=X_train_raw)
+
+print(f"\nTrain: {X_train.shape[0]} samples | Val: {X_val.shape[0]} samples")
+print(f"Feature means (should be ~0): {X_train.mean(axis=0).round(4)}")
+print(f"Feature stds  (should be ~1): {X_train.std(axis=0).round(4)}")
+
+
+# ---------------------------------------------------------------------------
+# 3. Build Model
+# ---------------------------------------------------------------------------
+
+def build_model(with_dropout: bool = True) -> Sequential:
+    """Build the classification model."""
+    layers = [
+        DenseLayer(16, activation="relu", name="Dense-1"),
+    ]
+    if with_dropout:
+        layers.append(DropoutLayer(rate=0.3, name="Dropout"))
+    layers += [
+        DenseLayer(8, activation="relu",    name="Dense-2"),
+        DenseLayer(1, activation="sigmoid", name="Output"),
+    ]
+    m = Sequential(layers)
+    m.compile(loss="bce", optimizer="adam", learning_rate=0.01)
+    return m
+
+
+model = build_model(with_dropout=True)
+model.summary()
+
+
