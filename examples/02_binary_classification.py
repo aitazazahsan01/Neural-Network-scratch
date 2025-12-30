@@ -150,3 +150,41 @@ plot_history(
     save_path=os.path.join(os.path.dirname(__file__), "binary_history.png"),
 )
 
+
+# ---------------------------------------------------------------------------
+# 7. Decision boundary (standardised space → need to transform grid)
+# ---------------------------------------------------------------------------
+
+# Build full-scale dataset for boundary plot (use standardised coordinates)
+X_all_raw = X_raw
+y_all     = y_raw.ravel()
+
+# Standardise full set with training statistics
+X_all, _, _ = standardize(X_all_raw, X_ref=X_train_raw)
+
+plot_decision_boundary(
+    model, X_all, y_all,
+    title="Decision Boundary — Binary Classification (Standardised Space)",
+    resolution=300,
+    save_path=os.path.join(os.path.dirname(__file__), "binary_boundary.png"),
+)
+
+
+# ---------------------------------------------------------------------------
+# 8. Overfitting demonstration — model WITHOUT dropout vs WITH dropout
+# ---------------------------------------------------------------------------
+
+print("\n" + "=" * 55)
+print("OVERFITTING EXPERIMENT")
+print("Large model with no dropout vs with dropout")
+print("=" * 55)
+
+np.random.seed(42)
+
+# Build a deliberately over-parameterised model (no dropout) to show overfitting
+over_model = Sequential([
+    DenseLayer(128, activation="relu",    name="Dense-1"),
+    DenseLayer(128, activation="relu",    name="Dense-2"),
+    DenseLayer(64,  activation="relu",    name="Dense-3"),
+    DenseLayer(1,   activation="sigmoid", name="Output"),
+])
