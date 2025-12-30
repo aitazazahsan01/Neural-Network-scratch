@@ -302,3 +302,4 @@ plt.tight_layout()
 plt.savefig(os.path.join(os.path.dirname(__file__), "optimizer_comparison.png"), dpi=150)
 plt.show()
 
+print("\nDone! Check examples/ for the saved plots.")
