@@ -226,3 +226,41 @@ fig.suptitle("Overfitting: Large Model Without vs With Dropout", fontsize=13, fo
 epochs_r = range(1, 301)
 
 for ax, hist, label_prefix, color_train, color_val in [
+    (axes[0], hist_over, "No Dropout", "#E53935", "#FF7043"),
+    (axes[1], hist_reg,  "Dropout",    "#1565C0", "#0288D1"),
+]:
+    ax.plot(epochs_r, hist["train_loss"], color=color_train, linewidth=2,
+            label=f"{label_prefix} Train Loss")
+    ax.plot(epochs_r, hist["val_loss"],   color=color_val,   linewidth=2,
+            linestyle="--", label=f"{label_prefix} Val Loss")
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("BCE Loss")
+    ax.set_title(label_prefix)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    ax.set_ylim([0, 1.2])
+
+plt.tight_layout()
+plt.savefig(os.path.join(os.path.dirname(__file__), "overfitting_comparison.png"), dpi=150)
+plt.show()
+
+gap_over  = min(hist_over["val_loss"]) - min(hist_over["train_loss"])
+gap_reg   = min(hist_reg["val_loss"])  - min(hist_reg["train_loss"])
+print(f"\nOverfit model  — train/val loss gap: {gap_over:.4f}")
+print(f"Dropout model  — train/val loss gap: {gap_reg:.4f}")
+print("Smaller gap = less overfitting. Dropout clearly helps!")
+
+
+# ---------------------------------------------------------------------------
+# 9. Optimizer comparison
+# ---------------------------------------------------------------------------
+
+print("\n" + "=" * 55)
+print("OPTIMIZER COMPARISON: SGD → Momentum → RMSProp → Adam")
+print("=" * 55)
+
+def simple_model(optimizer):
+    m = Sequential([
+        DenseLayer(16, activation="relu",    name="Dense-1"),
+        DenseLayer(8,  activation="relu",    name="Dense-2"),
+        DenseLayer(1,  activation="sigmoid", name="Output"),
