@@ -188,3 +188,41 @@ over_model = Sequential([
     DenseLayer(64,  activation="relu",    name="Dense-3"),
     DenseLayer(1,   activation="sigmoid", name="Output"),
 ])
+over_model.compile(loss="bce", optimizer="adam", learning_rate=0.01)
+
+np.random.seed(42)
+
+# Regularised version (same arch but with Dropout)
+reg_model = Sequential([
+    DenseLayer(128, activation="relu",    name="Dense-1"),
+    DropoutLayer(rate=0.5),
+    DenseLayer(128, activation="relu",    name="Dense-2"),
+    DropoutLayer(rate=0.5),
+    DenseLayer(64,  activation="relu",    name="Dense-3"),
+    DenseLayer(1,   activation="sigmoid", name="Output"),
+])
+reg_model.compile(loss="bce", optimizer="adam", learning_rate=0.01)
+
+print("\nTraining overfit model (no dropout)...")
+hist_over = over_model.fit(
+    X_train, y_train,
+    epochs=300, batch_size=32,
+    validation_data=(X_val, y_val),
+    verbose=1, verbose_every=50,
+)
+
+print("\nTraining regularised model (with dropout)...")
+hist_reg = reg_model.fit(
+    X_train, y_train,
+    epochs=300, batch_size=32,
+    validation_data=(X_val, y_val),
+    verbose=1, verbose_every=50,
+)
+
+# Plot overfitting comparison
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+fig.suptitle("Overfitting: Large Model Without vs With Dropout", fontsize=13, fontweight="bold")
+
+epochs_r = range(1, 301)
+
+for ax, hist, label_prefix, color_train, color_val in [
