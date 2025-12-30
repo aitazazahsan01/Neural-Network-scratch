@@ -264,3 +264,41 @@ def simple_model(optimizer):
         DenseLayer(16, activation="relu",    name="Dense-1"),
         DenseLayer(8,  activation="relu",    name="Dense-2"),
         DenseLayer(1,  activation="sigmoid", name="Output"),
+    ])
+    m.compile(loss="bce", optimizer=optimizer)
+    return m
+
+optimizers = {
+    "SGD (lr=0.05)":      SGD(lr=0.05),
+    "Momentum (lr=0.01)": SGDMomentum(lr=0.01, beta=0.9),
+    "RMSProp (lr=0.01)":  RMSProp(lr=0.01),
+    "Adam (lr=0.01)":     Adam(lr=0.01),
+}
+
+histories = {}
+for name, opt in optimizers.items():
+    print(f"\n  Training with {name}...")
+    np.random.seed(42)
+    m = simple_model(opt)
+    h = m.fit(X_train, y_train, epochs=100, batch_size=32, verbose=0)
+    histories[name] = h
+    final_loss = h["train_loss"][-1]
+    final_acc  = h["train_acc"][-1]
+    print(f"    Final loss: {final_loss:.4f}  |  Final acc: {final_acc:.4f}")
+
+fig, ax = plt.subplots(figsize=(10, 6))
+colors = ["#F44336", "#FF9800", "#4CAF50", "#2196F3"]
+for (name, hist), color in zip(histories.items(), colors):
+    ax.plot(hist["train_loss"], label=name, color=color, linewidth=2)
+
+ax.set_xlabel("Epoch")
+ax.set_ylabel("BCE Loss")
+ax.set_title("Optimizer Comparison — Training Loss", fontsize=13, fontweight="bold")
+ax.legend()
+ax.grid(True, alpha=0.3)
+ax.set_yscale("log")
+
+plt.tight_layout()
+plt.savefig(os.path.join(os.path.dirname(__file__), "optimizer_comparison.png"), dpi=150)
+plt.show()
+
