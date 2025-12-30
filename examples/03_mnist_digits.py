@@ -32,3 +32,37 @@ Softmax produces exactly this:
 ARCHITECTURE
 ------------
 Input (784) → Dense(256, ReLU) → Dense(128, ReLU) → Dense(10, Linear)
+Loss: SoftmaxCCE  (applies Softmax internally, more stable)
+Optimizer: Adam (lr=0.001)
+Expected accuracy: ~92–97% in 20 epochs
+"""
+
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from neuralnet import Sequential, DenseLayer, DropoutLayer
+from neuralnet.utils.data_utils import train_val_split, normalize, one_hot_encode
+from neuralnet.utils.metrics import classification_report_nn, confusion_matrix_nn
+from neuralnet.utils.visualizer import plot_history, plot_weight_histograms
+
+
+# ---------------------------------------------------------------------------
+# 1. Load Dataset
+# ---------------------------------------------------------------------------
+
+print("=" * 60)
+print("MNIST Digit Recognition")
+print("=" * 60)
+print("\nLoading MNIST via sklearn (may download on first run)...")
+
+try:
+    from sklearn.datasets import fetch_openml
+    mnist = fetch_openml("mnist_784", version=1, as_frame=False, parser="auto")
+    X_full = mnist.data.astype(float)
+    y_full = mnist.target.astype(int)
+    print(f"Full dataset: {X_full.shape[0]} samples, {X_full.shape[1]} features")
+except Exception as e:
