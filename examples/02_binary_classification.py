@@ -112,3 +112,41 @@ model = build_model(with_dropout=True)
 model.summary()
 
 
+# ---------------------------------------------------------------------------
+# 4. Train
+# ---------------------------------------------------------------------------
+
+print("Training with Adam + Dropout...")
+history = model.fit(
+    X_train, y_train,
+    epochs=200,
+    batch_size=32,
+    validation_data=(X_val, y_val),
+    verbose=1,
+    verbose_every=20,
+)
+
+
+# ---------------------------------------------------------------------------
+# 5. Evaluate
+# ---------------------------------------------------------------------------
+
+print("\n" + "=" * 55)
+print("EVALUATION ON VALIDATION SET")
+print("=" * 55)
+model.evaluate(X_val, y_val)
+
+y_val_pred = model.predict(X_val)
+classification_report_nn(y_val, y_val_pred, class_names=["Class 0", "Class 1"])
+
+
+# ---------------------------------------------------------------------------
+# 6. Visualise training curves
+# ---------------------------------------------------------------------------
+
+plot_history(
+    history,
+    title="Binary Classification — Adam + Dropout",
+    save_path=os.path.join(os.path.dirname(__file__), "binary_history.png"),
+)
+
