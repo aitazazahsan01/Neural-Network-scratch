@@ -202,3 +202,37 @@ ax.set_title("Confusion Matrix — MNIST Validation Set", fontsize=13, fontweigh
 # Annotate cells
 thresh = C.max() / 2.0
 for i in range(10):
+    for j in range(10):
+        ax.text(j, i, str(C[i, j]),
+                ha="center", va="center",
+                color="white" if C[i, j] > thresh else "black",
+                fontsize=8)
+
+plt.tight_layout()
+plt.savefig(os.path.join(os.path.dirname(__file__), "mnist_confusion.png"), dpi=150)
+plt.show()
+
+
+# ---------------------------------------------------------------------------
+# 7. Training curves
+# ---------------------------------------------------------------------------
+
+plot_history(
+    history,
+    title="MNIST Training — Adam + Dropout (SoftmaxCCE)",
+    save_path=os.path.join(os.path.dirname(__file__), "mnist_history.png"),
+)
+
+
+# ---------------------------------------------------------------------------
+# 8. Visualise sample predictions
+# ---------------------------------------------------------------------------
+
+print("\n" + "=" * 60)
+print("SAMPLE PREDICTIONS")
+print("=" * 60)
+
+# Select 20 random validation samples
+idx_sample = np.random.choice(len(X_val), 20, replace=False)
+X_sample   = X_val[idx_sample]
+y_sample   = y_val_int[idx_sample]
