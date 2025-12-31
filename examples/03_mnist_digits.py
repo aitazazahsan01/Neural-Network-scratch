@@ -168,3 +168,37 @@ history = model.fit(
 # 5. Evaluate
 # ---------------------------------------------------------------------------
 
+print("\n" + "=" * 60)
+print("EVALUATION ON VALIDATION SET")
+print("=" * 60)
+
+eval_result = model.evaluate(X_val, Y_val)
+
+# Detailed per-class report
+y_val_pred = model.predict(X_val)
+classification_report_nn(
+    Y_val, y_val_pred,
+    class_names=[str(d) for d in range(10)],
+)
+
+
+# ---------------------------------------------------------------------------
+# 6. Confusion Matrix
+# ---------------------------------------------------------------------------
+
+C = confusion_matrix_nn(Y_val, y_val_pred, n_classes=10)
+
+fig, ax = plt.subplots(figsize=(9, 7))
+im = ax.imshow(C, cmap="Blues", interpolation="nearest")
+fig.colorbar(im, ax=ax)
+ax.set_xticks(range(10))
+ax.set_yticks(range(10))
+ax.set_xticklabels(range(10))
+ax.set_yticklabels(range(10))
+ax.set_xlabel("Predicted Label")
+ax.set_ylabel("True Label")
+ax.set_title("Confusion Matrix — MNIST Validation Set", fontsize=13, fontweight="bold")
+
+# Annotate cells
+thresh = C.max() / 2.0
+for i in range(10):
