@@ -66,3 +66,37 @@ try:
     y_full = mnist.target.astype(int)
     print(f"Full dataset: {X_full.shape[0]} samples, {X_full.shape[1]} features")
 except Exception as e:
+    print(f"Could not load MNIST: {e}")
+    print("Generating random stand-in data for structure demonstration...")
+    np.random.seed(0)
+    X_full = np.random.rand(5000, 784) * 255
+    y_full = np.random.randint(0, 10, 5000)
+
+
+# ---------------------------------------------------------------------------
+# 2. Subset & Preprocess
+# ---------------------------------------------------------------------------
+
+MAX_SAMPLES = 20_000       # use a subset to keep training fast
+np.random.seed(42)
+idx       = np.random.permutation(len(X_full))[:MAX_SAMPLES]
+X_sub     = X_full[idx]
+y_sub     = y_full[idx]
+
+print(f"\nUsing {len(X_sub)} samples")
+print(f"Class distribution: { {k: int((y_sub==k).sum()) for k in range(10)} }")
+
+# Train/val split
+X_train_raw, X_val_raw, y_train_int, y_val_int = train_val_split(
+    X_sub, y_sub, val_fraction=0.15, seed=42
+)
+
+# Pixel normalisation: scale to [0, 1] — prevents large-magnitude inputs
+# from producing huge pre-activations early in training.
+X_train, x_min, x_max = normalize(X_train_raw)
+X_val,   _,     _     = normalize(X_val_raw, X_ref=X_train_raw)
+
+# One-hot encode labels
+# Labels are integers [0..9] → one-hot matrices of shape (m, 10)
+Y_train = one_hot_encode(y_train_int, n_classes=10)
+Y_val   = one_hot_encode(y_val_int,   n_classes=10)
