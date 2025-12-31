@@ -100,3 +100,37 @@ X_val,   _,     _     = normalize(X_val_raw, X_ref=X_train_raw)
 # Labels are integers [0..9] → one-hot matrices of shape (m, 10)
 Y_train = one_hot_encode(y_train_int, n_classes=10)
 Y_val   = one_hot_encode(y_val_int,   n_classes=10)
+
+print(f"\nTraining set:   {X_train.shape[0]} samples  X:{X_train.shape}  Y:{Y_train.shape}")
+print(f"Validation set: {X_val.shape[0]} samples  X:{X_val.shape}  Y:{Y_val.shape}")
+print(f"\nPixel value range after normalisation: [{X_train.min():.2f}, {X_train.max():.2f}]")
+
+
+# ---------------------------------------------------------------------------
+# 3. Build Model
+# ---------------------------------------------------------------------------
+
+print("\n" + "=" * 60)
+print("MODEL ARCHITECTURE")
+print("=" * 60)
+
+np.random.seed(42)
+
+model = Sequential([
+    # Hidden layer 1: 784 → 256 neurons, ReLU
+    # He init is auto-selected because activation is ReLU
+    DenseLayer(256, activation="relu", name="Dense-1"),
+    DropoutLayer(rate=0.3, name="Dropout-1"),
+
+    # Hidden layer 2: 256 → 128 neurons, ReLU
+    DenseLayer(128, activation="relu", name="Dense-2"),
+    DropoutLayer(rate=0.2, name="Dropout-2"),
+
+    # Output layer: 128 → 10 neurons (one per digit class)
+    # Using Linear activation because SoftmaxCCE applies Softmax internally.
+    # This is numerically more stable than Softmax → CCE separately.
+    DenseLayer(10, activation="linear", name="Output"),
+])
+
+model.compile(
+    loss="softmax_cce",   # Softmax + Categorical Cross-Entropy (fused)
