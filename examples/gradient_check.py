@@ -58,3 +58,23 @@ def numerical_gradient(model, X, y, epsilon=1e-5):
                 loss_plus   = loss_fn.compute(y, y_pred_plus)
 
                 # Loss at (param - epsilon)
+                param[idx] = orig - epsilon
+                y_pred_minus = model.forward(X, training=False)
+                loss_minus   = loss_fn.compute(y, y_pred_minus)
+
+                # Restore
+                param[idx] = orig
+
+                # Finite difference approximation
+                grad[idx] = (loss_plus - loss_minus) / (2 * epsilon)
+                it.iternext()
+
+            num_grads[(i, param_name)] = grad
+
+    return num_grads
+
+
+def relative_difference(a, b):
+    """||a-b|| / (||a|| + ||b|| + 1e-10)"""
+    return np.linalg.norm(a - b) / (np.linalg.norm(a) + np.linalg.norm(b) + 1e-10)
+
