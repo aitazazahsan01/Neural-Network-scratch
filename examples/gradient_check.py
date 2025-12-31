@@ -18,3 +18,23 @@ If our backprop is correct, the relative difference should be < 1e-5:
 If it's > 1e-3, there's almost certainly a bug.
 """
 
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import numpy as np
+from neuralnet import Sequential, DenseLayer
+from neuralnet.losses import BinaryCrossEntropy, MSE, SoftmaxCCE
+from neuralnet.utils.data_utils import one_hot_encode
+
+
+def numerical_gradient(model, X, y, epsilon=1e-5):
+    """Compute numerical gradients for all weights using finite differences."""
+    num_grads = {}
+
+    # Run one forward + backward to get the current loss
+    y_pred = model.forward(X, training=False)
+    loss_fn = model._loss
+
+    # Iterate over each layer and each parameter
+    for i, layer in enumerate(model.layers):
+        if not hasattr(layer, 'W') or layer.W is None:
