@@ -270,3 +270,9 @@ plt.show()
 
 plot_weight_histograms(
     model,
+    title="Weight Distributions After Training (He Init → ReLU layers)",
+    save_path=os.path.join(os.path.dirname(__file__), "mnist_weights.png"),
+)
+
+print(f"\n✅ Final validation accuracy: {eval_result['accuracy']:.4f}")
+print("\nDone! Saved plots in examples/")
