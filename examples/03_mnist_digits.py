@@ -236,3 +236,37 @@ print("=" * 60)
 idx_sample = np.random.choice(len(X_val), 20, replace=False)
 X_sample   = X_val[idx_sample]
 y_sample   = y_val_int[idx_sample]
+
+# Get probabilities (apply softmax to the linear output)
+logits = model.predict(X_sample)
+from scipy.special import softmax as scipy_softmax
+
+# Apply softmax ourselves (our model outputs logits with SoftmaxCCE)
+probs  = np.exp(logits - logits.max(axis=1, keepdims=True))
+probs  /= probs.sum(axis=1, keepdims=True)
+
+pred_classes = np.argmax(probs, axis=1)
+confidence   = probs.max(axis=1)
+
+fig, axes = plt.subplots(4, 5, figsize=(14, 11))
+fig.suptitle("Sample Predictions — MNIST Validation Set\n(green=correct, red=wrong)", fontsize=13)
+
+for ax, img, true_lbl, pred_lbl, conf in zip(
+    axes.ravel(), X_sample, y_sample, pred_classes, confidence
+):
+    ax.imshow(img.reshape(28, 28), cmap="gray", interpolation="nearest")
+    color = "green" if pred_lbl == true_lbl else "red"
+    ax.set_title(f"Pred: {pred_lbl}  (conf={conf:.2f})\nTrue: {true_lbl}", color=color, fontsize=9)
+    ax.axis("off")
+
+plt.tight_layout()
+plt.savefig(os.path.join(os.path.dirname(__file__), "mnist_predictions.png"), dpi=150)
+plt.show()
+
+
+# ---------------------------------------------------------------------------
+# 9. Weight histograms (initialisation effect)
+# ---------------------------------------------------------------------------
+
+plot_weight_histograms(
+    model,
