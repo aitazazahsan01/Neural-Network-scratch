@@ -38,3 +38,23 @@ def numerical_gradient(model, X, y, epsilon=1e-5):
     # Iterate over each layer and each parameter
     for i, layer in enumerate(model.layers):
         if not hasattr(layer, 'W') or layer.W is None:
+            continue
+
+        for param_name in ['W', 'b']:
+            param = getattr(layer, param_name)
+            grad = np.zeros_like(param)
+
+            # Iterate over every element of the parameter matrix
+            it = np.nditer(param, flags=['multi_index'])
+            while not it.finished:
+                idx = it.multi_index
+
+                # Save original value
+                orig = param[idx].copy()
+
+                # Loss at (param + epsilon)
+                param[idx] = orig + epsilon
+                y_pred_plus = model.forward(X, training=False)
+                loss_plus   = loss_fn.compute(y, y_pred_plus)
+
+                # Loss at (param - epsilon)
