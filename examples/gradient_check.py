@@ -78,3 +78,23 @@ def relative_difference(a, b):
     """||a-b|| / (||a|| + ||b|| + 1e-10)"""
     return np.linalg.norm(a - b) / (np.linalg.norm(a) + np.linalg.norm(b) + 1e-10)
 
+
+def run_gradient_check(model, X, y, label=""):
+    print(f"\n{'=' * 55}")
+    print(f"Gradient Check: {label}")
+    print(f"{'=' * 55}")
+
+    # Forward + backward to compute analytic gradients
+    y_pred = model.forward(X, training=False)
+    model.backward(y, y_pred)
+
+    # Numerical gradients
+    num_grads = numerical_gradient(model, X, y)
+
+    all_passed = True
+    for (i, param_name), num_grad in num_grads.items():
+        layer = model.layers[i]
+        if param_name == 'W':
+            analytic_grad = layer.dW
+        else:
+            analytic_grad = layer.db
