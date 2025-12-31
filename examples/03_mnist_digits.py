@@ -134,3 +134,37 @@ model = Sequential([
 
 model.compile(
     loss="softmax_cce",   # Softmax + Categorical Cross-Entropy (fused)
+    optimizer="adam",
+    learning_rate=0.001,
+)
+
+model.summary()
+
+print("NOTE: Output layer uses 'linear' activation.")
+print("      The SoftmaxCCE loss applies Softmax internally.")
+print("      This is numerically more stable (avoids log(softmax(z))).")
+
+
+# ---------------------------------------------------------------------------
+# 4. Train
+# ---------------------------------------------------------------------------
+
+print("\n" + "=" * 60)
+print("TRAINING")
+print("=" * 60)
+print(f"Epochs: 20  |  Batch size: 128  |  Optimizer: Adam\n")
+
+history = model.fit(
+    X_train, Y_train,
+    epochs=20,
+    batch_size=128,
+    validation_data=(X_val, Y_val),
+    verbose=1,
+    verbose_every=2,
+)
+
+
+# ---------------------------------------------------------------------------
+# 5. Evaluate
+# ---------------------------------------------------------------------------
+
