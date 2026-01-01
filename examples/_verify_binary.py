@@ -28,3 +28,8 @@ model = Sequential([
     DropoutLayer(rate=0.3, name='Dropout'),
     DenseLayer(8,  activation='relu', name='Dense-2'),
     DenseLayer(1,  activation='sigmoid', name='Output'),
+])
+model.compile(loss='bce', optimizer='adam', learning_rate=0.01)
+model.summary()
+
+history = model.fit(
