@@ -98,3 +98,23 @@ def run_gradient_check(model, X, y, label=""):
             analytic_grad = layer.dW
         else:
             analytic_grad = layer.db
+
+        if analytic_grad is None:
+            print(f"  Layer {i} {param_name}: SKIP (no gradient computed)")
+            continue
+
+        rel_diff = relative_difference(analytic_grad, num_grad)
+        status   = "[PASS]" if rel_diff < 1e-5 else "[FAIL]"
+        if rel_diff >= 1e-5:
+            all_passed = False
+
+        print(
+            f"  Layer {i} ({type(layer).__name__}) {param_name}: "
+            f"rel_diff = {rel_diff:.2e}  {status}"
+        )
+
+    if all_passed:
+        print(f"\n[ALL PASS] ALL GRADIENT CHECKS PASSED for: {label}")
+    else:
+        print(f"\n[FAIL] SOME CHECKS FAILED for: {label}")
+
