@@ -33,3 +33,8 @@ model.compile(loss='bce', optimizer='adam', learning_rate=0.01)
 model.summary()
 
 history = model.fit(
+    X_train, y_train,
+    epochs=200, batch_size=32,
+    validation_data=(X_val, y_val),
+    verbose=1, verbose_every=50,
+)
