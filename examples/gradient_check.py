@@ -158,3 +158,9 @@ m3 = Sequential([
     DenseLayer(4, activation="tanh",   weight_init="xavier_normal"),
     DenseLayer(3, activation="linear", weight_init="xavier_normal"),
 ])
+m3.compile(loss="softmax_cce", optimizer="sgd")
+run_gradient_check(m3, X3, y3, label="SoftmaxCCE + ReLU + Tanh + Linear")
+
+print("\n" + "=" * 55)
+print("Gradient checking complete!")
+print("If all checks pass, backpropagation is correctly implemented.")
