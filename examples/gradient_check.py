@@ -138,3 +138,23 @@ run_gradient_check(m1, X1, y1, label="MSE + Tanh + Linear")
 # ─── Test 2: BCE + Sigmoid output (binary classification) ────────────────────
 X2 = np.random.randn(8, 4).astype(np.float64)
 y2 = (np.random.rand(8, 1) > 0.5).astype(np.float64)
+
+m2 = Sequential([
+    DenseLayer(5, activation="relu",    weight_init="he_normal"),
+    DenseLayer(3, activation="tanh",    weight_init="xavier_normal"),
+    DenseLayer(1, activation="sigmoid", weight_init="xavier_normal"),
+])
+m2.compile(loss="bce", optimizer="sgd")
+run_gradient_check(m2, X2, y2, label="BCE + ReLU + Tanh + Sigmoid")
+
+
+# ─── Test 3: SoftmaxCCE + Linear output (multi-class) ────────────────────────
+X3 = np.random.randn(8, 5).astype(np.float64)
+y3_int = np.random.randint(0, 3, 8)
+y3     = one_hot_encode(y3_int, n_classes=3).astype(np.float64)
+
+m3 = Sequential([
+    DenseLayer(6, activation="relu",   weight_init="he_normal"),
+    DenseLayer(4, activation="tanh",   weight_init="xavier_normal"),
+    DenseLayer(3, activation="linear", weight_init="xavier_normal"),
+])
