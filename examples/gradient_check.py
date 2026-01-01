@@ -118,3 +118,23 @@ def run_gradient_check(model, X, y, label=""):
     else:
         print(f"\n[FAIL] SOME CHECKS FAILED for: {label}")
 
+    return all_passed
+
+
+np.random.seed(0)
+
+# ─── Test 1: MSE + Linear output (regression) ────────────────────────────────
+X1 = np.random.randn(8, 3).astype(np.float64)
+y1 = np.random.randn(8, 1).astype(np.float64)
+
+m1 = Sequential([
+    DenseLayer(4,  activation="tanh",   weight_init="xavier_normal"),
+    DenseLayer(1,  activation="linear", weight_init="xavier_normal"),
+])
+m1.compile(loss="mse", optimizer="sgd")
+run_gradient_check(m1, X1, y1, label="MSE + Tanh + Linear")
+
+
+# ─── Test 2: BCE + Sigmoid output (binary classification) ────────────────────
+X2 = np.random.randn(8, 4).astype(np.float64)
+y2 = (np.random.rand(8, 1) > 0.5).astype(np.float64)
