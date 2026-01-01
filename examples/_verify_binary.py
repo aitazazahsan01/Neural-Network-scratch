@@ -18,3 +18,8 @@ X_raw, y_raw = make_classification(
     n_redundant=0, n_clusters_per_class=1, class_sep=1.2, random_state=42
 )
 y_raw = y_raw.reshape(-1, 1).astype(float)
+
+X_train_raw, X_val_raw, y_train, y_val = train_val_split(X_raw, y_raw, val_fraction=0.2, seed=42)
+X_train, mean, std = standardize(X_train_raw)
+X_val, _, _        = standardize(X_val_raw, X_ref=X_train_raw)
+
