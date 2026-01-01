@@ -23,3 +23,8 @@ X_train_raw, X_val_raw, y_train, y_val = train_val_split(X_raw, y_raw, val_fract
 X_train, mean, std = standardize(X_train_raw)
 X_val, _, _        = standardize(X_val_raw, X_ref=X_train_raw)
 
+model = Sequential([
+    DenseLayer(16, activation='relu', name='Dense-1'),
+    DropoutLayer(rate=0.3, name='Dropout'),
+    DenseLayer(8,  activation='relu', name='Dense-2'),
+    DenseLayer(1,  activation='sigmoid', name='Output'),
