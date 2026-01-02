@@ -40,3 +40,10 @@ model = Sequential([
     DropoutLayer(rate=0.2, name='Dropout-2'),
     DenseLayer(10,  activation='linear', name='Output'),
 ])
+model.compile(loss='softmax_cce', optimizer='adam', learning_rate=0.001)
+model.summary()
+
+history = model.fit(
+    X_train, Y_train,
+    epochs=20, batch_size=128,
+    validation_data=(X_val, Y_val),
