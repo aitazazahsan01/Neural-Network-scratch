@@ -38,3 +38,8 @@ history = model.fit(
     validation_data=(X_val, y_val),
     verbose=1, verbose_every=50,
 )
+
+result = model.evaluate(X_val, y_val)
+y_val_pred = model.predict(X_val)
+classification_report_nn(y_val, y_val_pred, class_names=['Class 0', 'Class 1'])
+print(f"\nFinal val accuracy: {result['accuracy']:.4f}")
