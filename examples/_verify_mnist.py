@@ -19,3 +19,10 @@ X_full = mnist.data.astype(float)
 y_full = mnist.target.astype(int)
 print(f"Loaded {X_full.shape[0]} samples")
 
+# Use 20k subset
+idx   = np.random.permutation(len(X_full))[:20000]
+X_sub = X_full[idx]
+y_sub = y_full[idx]
+
+X_train_raw, X_val_raw, y_train_int, y_val_int = train_val_split(X_sub, y_sub, val_fraction=0.15, seed=42)
+X_train, x_min, x_max = normalize(X_train_raw)
