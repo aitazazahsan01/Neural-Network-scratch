@@ -47,3 +47,10 @@ history = model.fit(
     X_train, Y_train,
     epochs=20, batch_size=128,
     validation_data=(X_val, Y_val),
+    verbose=1, verbose_every=2,
+)
+
+result = model.evaluate(X_val, Y_val)
+y_val_pred = model.predict(X_val)
+classification_report_nn(Y_val, y_val_pred, class_names=[str(d) for d in range(10)])
+print(f"\nFinal val accuracy: {result['accuracy']:.4f}")
