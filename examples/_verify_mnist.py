@@ -33,3 +33,10 @@ Y_val   = one_hot_encode(y_val_int,   n_classes=10)
 print(f"Train: {X_train.shape[0]}, Val: {X_val.shape[0]}")
 
 np.random.seed(42)
+model = Sequential([
+    DenseLayer(256, activation='relu', name='Dense-1'),
+    DropoutLayer(rate=0.3, name='Dropout-1'),
+    DenseLayer(128, activation='relu', name='Dense-2'),
+    DropoutLayer(rate=0.2, name='Dropout-2'),
+    DenseLayer(10,  activation='linear', name='Output'),
+])
