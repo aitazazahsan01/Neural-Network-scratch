@@ -26,3 +26,10 @@ y_sub = y_full[idx]
 
 X_train_raw, X_val_raw, y_train_int, y_val_int = train_val_split(X_sub, y_sub, val_fraction=0.15, seed=42)
 X_train, x_min, x_max = normalize(X_train_raw)
+X_val,   _,     _     = normalize(X_val_raw, X_ref=X_train_raw)
+Y_train = one_hot_encode(y_train_int, n_classes=10)
+Y_val   = one_hot_encode(y_val_int,   n_classes=10)
+
+print(f"Train: {X_train.shape[0]}, Val: {X_val.shape[0]}")
+
+np.random.seed(42)
