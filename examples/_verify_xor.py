@@ -8,3 +8,8 @@ import numpy as np
 
 from neuralnet import Sequential, DenseLayer
 
+np.random.seed(42)
+X = np.array([[0,0],[0,1],[1,0],[1,1]], dtype=float)
+y = np.array([[0],[1],[1],[0]], dtype=float)
+
+# Linear model - should stall
