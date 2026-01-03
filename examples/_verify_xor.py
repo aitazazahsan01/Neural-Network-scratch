@@ -43,3 +43,5 @@ for xi, pi, yi in zip(X, preds.ravel(), y.ravel()):
 
 if all_correct:
     print("\nXOR SOLVED!")
+else:
+    print("\nNot all correct. Try re-running.")
