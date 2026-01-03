@@ -28,3 +28,8 @@ model = Sequential([
 ])
 model.compile(loss='bce', optimizer='adam', learning_rate=0.05)
 h = model.fit(X, y, epochs=3000, batch_size=-1, verbose=1, verbose_every=500)
+
+print("[2-Layer] Final loss:", round(h['train_loss'][-1], 6),
+      " acc:", h['train_acc'][-1])
+
+preds = model.predict(X)
