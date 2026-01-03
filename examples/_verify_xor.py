@@ -38,3 +38,8 @@ for xi, pi, yi in zip(X, preds.ravel(), y.ravel()):
     r = int(round(float(pi)))
     mark = '[OK]' if r == int(yi) else '[X]'
     if r != int(yi):
+        all_correct = False
+    print(f"  {xi} -> {pi:.4f} (pred={r}, true={int(yi)}) {mark}")
+
+if all_correct:
+    print("\nXOR SOLVED!")
