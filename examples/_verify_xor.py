@@ -18,3 +18,8 @@ model_lin.compile(loss='bce', optimizer='adam', learning_rate=0.05)
 h_lin = model_lin.fit(X, y, epochs=2000, batch_size=-1, verbose=0)
 print("[Linear] Final loss:", round(h_lin['train_loss'][-1], 4),
       " acc:", round(h_lin['train_acc'][-1], 4),
+      " (should be stuck near 0.5 acc)")
+
+# 2-layer network - should solve XOR
+np.random.seed(42)
+model = Sequential([
