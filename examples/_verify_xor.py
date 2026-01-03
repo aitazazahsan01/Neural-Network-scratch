@@ -33,3 +33,8 @@ print("[2-Layer] Final loss:", round(h['train_loss'][-1], 6),
       " acc:", h['train_acc'][-1])
 
 preds = model.predict(X)
+all_correct = True
+for xi, pi, yi in zip(X, preds.ravel(), y.ravel()):
+    r = int(round(float(pi)))
+    mark = '[OK]' if r == int(yi) else '[X]'
+    if r != int(yi):
