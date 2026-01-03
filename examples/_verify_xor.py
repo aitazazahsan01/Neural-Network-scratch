@@ -23,3 +23,8 @@ print("[Linear] Final loss:", round(h_lin['train_loss'][-1], 4),
 # 2-layer network - should solve XOR
 np.random.seed(42)
 model = Sequential([
+    DenseLayer(4, activation='tanh', name='Hidden'),
+    DenseLayer(1, activation='sigmoid', name='Output'),
+])
+model.compile(loss='bce', optimizer='adam', learning_rate=0.05)
+h = model.fit(X, y, epochs=3000, batch_size=-1, verbose=1, verbose_every=500)
