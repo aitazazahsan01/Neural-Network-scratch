@@ -250,3 +250,45 @@ class Softmax(Activation):
     -------------------------
     exp(z_k) can overflow for large z_k.  We subtract max(z) first:
 
+        a_k = exp(z_k - max(z)) / Σ exp(z_j - max(z))
+
+    This doesn't change the result (constant cancels in numerator and
+    denominator) but keeps all exponents ≤ 0.
+
+    BACKWARD
+    --------
+    The full derivative is a Jacobian matrix (K×K per sample) because
+    each output a_k depends on *all* inputs z_j:
+
+        ∂a_k/∂z_j = a_k(δ_{kj} - a_j)
+
+    where δ_{kj} is the Kronecker delta.
+
+    In practice the Softmax backward is almost *never* used in isolation.
+    When paired with categorical cross-entropy (the standard setup), the
+    two derivatives cancel beautifully:
+
+        dL/dZ = A - Y_one_hot        (see losses.py SoftmaxCCE)
+
+    The standalone backward below handles the general case.
+    """
+
+    def forward(self, Z: np.ndarray) -> np.ndarray:
+        # Subtract row-wise max for stability
+        Z_shifted = Z - Z.max(axis=1, keepdims=True)
+        exp_Z = np.exp(Z_shifted)
+        return (exp_Z / exp_Z.sum(axis=1, keepdims=True)).astype(DTYPE)
+
+    def backward(self, dA: np.ndarray, Z: np.ndarray) -> np.ndarray:
+        """General Softmax backward via the Jacobian.
+
+        For each sample i, the contribution to dZ is:
+            dZ_i = A_i * (dA_i - sum(dA_i * A_i))
+
+        This is the vectorised form of the Jacobian-vector product.
+        Shape: same as Z.
+        """
+        A = self.forward(Z)                         # (m, K)
+        # Element-wise: dZ_k = A_k * (dA_k - Σ_j dA_j A_j)
+        dot = np.sum(dA * A, axis=1, keepdims=True) # (m, 1)
+        dZ = A * (dA - dot)                         # (m, K)
