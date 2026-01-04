@@ -166,3 +166,45 @@ class Sigmoid(Activation):
     --------
     The derivative has an elegant form in terms of the *output* A:
 
+        f'(z) = σ(z) · (1 − σ(z)) = A · (1 − A)
+
+    Derivation:
+        d/dz [1/(1+e^{-z})]
+        = e^{-z} / (1+e^{-z})^2
+        = [1/(1+e^{-z})] · [e^{-z}/(1+e^{-z})]
+        = σ(z) · (1 - σ(z))
+
+    SATURATION PROBLEM
+    ------------------
+    For |z| >> 0, σ(z) ≈ 0 or 1 → f'(z) ≈ 0. Gradients vanish in
+    lower layers. This is why Sigmoid is rarely used in hidden layers
+    of deep networks (use ReLU instead).
+
+    NUMERICAL STABILITY
+    -------------------
+    We use a numerically stable version:
+        if z >= 0:  σ(z) = 1 / (1 + e^{-z})
+        if z <  0:  σ(z) = e^z / (1 + e^z)
+    This avoids overflow in e^z for large positive z.
+    """
+
+    def forward(self, Z: np.ndarray) -> np.ndarray:
+        # Numerically stable sigmoid
+        A = np.where(
+            Z >= 0,
+            1.0 / (1.0 + np.exp(-Z)),
+            np.exp(Z) / (1.0 + np.exp(Z))
+        )
+        return A.astype(DTYPE)
+
+    def backward(self, dA: np.ndarray, Z: np.ndarray) -> np.ndarray:
+        A = self.forward(Z)          # recompute (or we could cache)
+        # f'(z) = A(1-A)
+        sig_prime = A * (1.0 - A)
+        return (dA * sig_prime).astype(DTYPE)
+
+
+class Tanh(Activation):
+    """Hyperbolic tangent: f(z) = tanh(z) = (e^z - e^{-z}) / (e^z + e^{-z}).
+
+    Maps ℝ → (−1, 1). Zero-centred (unlike sigmoid), which tends to make
