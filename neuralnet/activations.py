@@ -208,3 +208,45 @@ class Tanh(Activation):
     """Hyperbolic tangent: f(z) = tanh(z) = (e^z - e^{-z}) / (e^z + e^{-z}).
 
     Maps ℝ → (−1, 1). Zero-centred (unlike sigmoid), which tends to make
+    optimisation easier because gradients don't all have the same sign.
+
+    FORWARD
+    -------
+        A = tanh(Z)
+
+    BACKWARD
+    --------
+        f'(z) = 1 − tanh²(z) = 1 − A²
+
+    Like Sigmoid, it saturates for |z| >> 0, so the dying gradient
+    problem is still present, just less severe for shallow networks.
+    """
+
+    def forward(self, Z: np.ndarray) -> np.ndarray:
+        return np.tanh(Z).astype(DTYPE)
+
+    def backward(self, dA: np.ndarray, Z: np.ndarray) -> np.ndarray:
+        A = self.forward(Z)
+        # f'(z) = 1 - A^2
+        tanh_prime = 1.0 - A ** 2
+        return (dA * tanh_prime).astype(DTYPE)
+
+
+class Softmax(Activation):
+    """Softmax: converts a vector of logits into a probability distribution.
+
+    FORWARD
+    -------
+    For a vector z ∈ ℝ^K:
+
+        a_k = exp(z_k) / Σ_{j=1}^{K} exp(z_j)
+
+    Properties:
+        • All outputs in (0, 1)
+        • Outputs sum to 1  →  valid probability distribution
+        • Exponential amplifies the largest logit ("winner-take-more")
+
+    NUMERICAL STABILITY TRICK
+    -------------------------
+    exp(z_k) can overflow for large z_k.  We subtract max(z) first:
+
