@@ -292,3 +292,45 @@ class Softmax(Activation):
         # Element-wise: dZ_k = A_k * (dA_k - Σ_j dA_j A_j)
         dot = np.sum(dA * A, axis=1, keepdims=True) # (m, 1)
         dZ = A * (dA - dot)                         # (m, K)
+        return dZ.astype(DTYPE)
+
+
+# ---------------------------------------------------------------------------
+# Registry / factory
+# ---------------------------------------------------------------------------
+
+_REGISTRY = {
+    "linear":     Linear,
+    "relu":       ReLU,
+    "leaky_relu": LeakyReLU,
+    "sigmoid":    Sigmoid,
+    "tanh":       Tanh,
+    "softmax":    Softmax,
+}
+
+
+def get_activation(name: str | object, **kwargs) -> Activation:
+    """Return an activation instance by name or pass through an instance.
+
+    Parameters
+    ----------
+    name : str or Activation instance
+    **kwargs
+        Forwarded to the constructor when *name* is a string
+        (e.g., ``get_activation("leaky_relu", alpha=0.2)``).
+
+    Examples
+    --------
+    >>> act = get_activation("relu")
+    >>> A   = act.forward(np.array([[-1, 0, 2]]))
+    array([[0., 0., 2.]])
+    """
+    if isinstance(name, str):
+        key = name.lower()
+        if key not in _REGISTRY:
+            raise ValueError(
+                f"Unknown activation '{name}'. "
+                f"Available: {list(_REGISTRY.keys())}"
+            )
+        return _REGISTRY[key](**kwargs)
+    return name  # already an instance
