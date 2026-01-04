@@ -124,3 +124,45 @@ class ReLU(Activation):
         # Derivative is 1 where Z > 0, else 0.
         # (Z > 0) produces a boolean mask; multiplied by dA gives dZ.
         dZ = dA * (Z > 0).astype(DTYPE)
+        return dZ
+
+
+class LeakyReLU(Activation):
+    """Leaky ReLU: f(z) = z if z>0 else alpha*z.
+
+    Derivative:
+        f'(z) = 1     if z > 0
+                alpha  if z ≤ 0
+
+    The small non-zero slope *alpha* (default 0.01) keeps gradients
+    alive for negative pre-activations — solving the dying ReLU problem.
+    """
+
+    def __init__(self, alpha: float = 0.01) -> None:
+        self.alpha = alpha
+
+    def forward(self, Z: np.ndarray) -> np.ndarray:
+        return np.where(Z > 0, Z, self.alpha * Z).astype(DTYPE)
+
+    def backward(self, dA: np.ndarray, Z: np.ndarray) -> np.ndarray:
+        dZ = np.where(Z > 0, 1.0, self.alpha).astype(DTYPE)
+        return dA * dZ
+
+    def __repr__(self) -> str:
+        return f"LeakyReLU(alpha={self.alpha})"
+
+
+class Sigmoid(Activation):
+    """Logistic sigmoid: f(z) = 1 / (1 + e^{-z}).
+
+    Maps ℝ → (0, 1). Commonly used on the *output* neuron of a binary
+    classifier so the output can be interpreted as a probability.
+
+    FORWARD
+    -------
+        A = σ(Z) = 1 / (1 + exp(-Z))
+
+    BACKWARD
+    --------
+    The derivative has an elegant form in terms of the *output* A:
+
