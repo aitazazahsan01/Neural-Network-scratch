@@ -82,3 +82,45 @@ class Linear(Activation):
     is an unbounded real number. It applies no squashing.
     """
 
+    def forward(self, Z: np.ndarray) -> np.ndarray:
+        return Z.astype(DTYPE)
+
+    def backward(self, dA: np.ndarray, Z: np.ndarray) -> np.ndarray:
+        # f'(z) = 1, so dZ = dA * 1 = dA
+        return dA.astype(DTYPE)
+
+
+class ReLU(Activation):
+    """Rectified Linear Unit: f(z) = max(0, z).
+
+    FORWARD
+    -------
+        A = max(0, Z)   element-wise
+
+    BACKWARD (derivative)
+    ------
+        f'(z) = 1  if z > 0
+                0  if z ≤ 0
+
+        dZ = dA * f'(Z)
+
+    WHY RELU?
+    ---------
+    1. No saturation for positive inputs → gradient flows freely.
+    2. Cheap to compute (just a threshold).
+    3. Introduces sparsity (many neurons output 0).
+
+    DYING RELU PROBLEM
+    ------------------
+    If a neuron's pre-activation is always negative (e.g., after a large
+    negative weight update), f'(z) = 0 forever — the neuron is "dead" and
+    never recovers. Mitigations: He init, careful learning rate, LeakyReLU.
+    """
+
+    def forward(self, Z: np.ndarray) -> np.ndarray:
+        return np.maximum(0.0, Z).astype(DTYPE)
+
+    def backward(self, dA: np.ndarray, Z: np.ndarray) -> np.ndarray:
+        # Derivative is 1 where Z > 0, else 0.
+        # (Z > 0) produces a boolean mask; multiplied by dA gives dZ.
+        dZ = dA * (Z > 0).astype(DTYPE)
