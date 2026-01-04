@@ -40,3 +40,45 @@ general case via the Jacobian.
 Available activations
 ---------------------
 * Linear    – identity; used in the output of regression models
+* ReLU      – max(0, z); workhorse of modern deep learning
+* LeakyReLU – leaky variant that avoids "dying ReLU"
+* Sigmoid   – 1/(1+e^−z); maps ℝ → (0,1); used in binary output
+* Tanh      – 2σ(2z)−1; maps ℝ → (−1,1); centered version of sigmoid
+* Softmax   – normalised exponential; maps ℝ^K → probability simplex
+"""
+
+import numpy as np
+from .tensor import clip, EPSILON, DTYPE
+
+
+# ---------------------------------------------------------------------------
+# Base class
+# ---------------------------------------------------------------------------
+
+class Activation:
+    """Abstract base for all activation functions."""
+
+    def forward(self, Z: np.ndarray) -> np.ndarray:
+        raise NotImplementedError
+
+    def backward(self, dA: np.ndarray, Z: np.ndarray) -> np.ndarray:
+        raise NotImplementedError
+
+    def __call__(self, Z: np.ndarray) -> np.ndarray:
+        return self.forward(Z)
+
+    def __repr__(self) -> str:
+        return self.__class__.__name__ + "()"
+
+
+# ---------------------------------------------------------------------------
+# Concrete activations
+# ---------------------------------------------------------------------------
+
+class Linear(Activation):
+    """Identity activation: f(z) = z, f'(z) = 1.
+
+    Use this on the *output* layer of a regression model when the target
+    is an unbounded real number. It applies no squashing.
+    """
+
