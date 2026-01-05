@@ -206,3 +206,10 @@ def get_initializer(name: str | object, **kwargs):
     if isinstance(name, str):
         key = name.lower()
         if key not in _REGISTRY:
+            raise ValueError(
+                f"Unknown initialiser '{name}'. "
+                f"Available: {list(_REGISTRY.keys())}"
+            )
+        return _REGISTRY[key](**kwargs)
+    # Assume it's already an initialiser instance
+    return name
