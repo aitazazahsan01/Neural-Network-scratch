@@ -24,3 +24,29 @@ The goal is to keep the variance of activations *roughly constant* across
 every layer so that gradients flow without exploding or vanishing.
 
 VARIANCE ANALYSIS (Xavier initialisation)
+------------------------------------------
+Assume inputs x_i are i.i.d. with mean 0, variance Var(x).
+A single neuron computes z = Σ w_i x_i (n_in terms).
+
+    Var(z) = n_in · Var(w) · Var(x)
+
+To maintain Var(z) = Var(x) we need:
+
+    Var(w) = 1 / n_in          ← "LeCun" init for sigmoid/tanh
+
+Averaging fan_in and fan_out (Glorot & Bengio, 2010):
+
+    Var(w) = 2 / (fan_in + fan_out)   ← Xavier / Glorot
+
+For ReLU (He et al., 2015) — ReLU zeros out half the neurons so
+variance is halved; compensate by doubling:
+
+    Var(w) = 2 / fan_in        ← He / Kaiming
+
+Available classes
+-----------------
+* ZeroInit          – all zeros (good for biases, BAD for weights)
+* RandomNormal      – N(0, σ); naive baseline
+* XavierUniform     – Uniform[−√(6/(fi+fo)), +√(6/(fi+fo))]
+* XavierNormal      – N(0, √(2/(fi+fo)))
+* HeNormal          – N(0, √(2/fan_in))   (recommended for ReLU)
