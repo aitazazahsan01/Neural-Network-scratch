@@ -76,3 +76,29 @@ class ZeroInit:
 class RandomNormal:
     """Sample weights from N(0, sigma).
 
+    Parameters
+    ----------
+    sigma : float
+        Standard deviation. Default is 0.01 (small but non-zero).
+
+    When to use
+    -----------
+    Quick experiments and sanity checks. For deep networks, prefer
+    Xavier or He to avoid vanishing / exploding activations.
+    """
+
+    def __init__(self, sigma: float = 0.01) -> None:
+        self.sigma = sigma
+
+    def __call__(self, shape: tuple) -> np.ndarray:
+        return np.random.randn(*shape).astype(DTYPE) * self.sigma
+
+    def __repr__(self) -> str:
+        return f"RandomNormal(sigma={self.sigma})"
+
+
+class XavierUniform:
+    """Glorot uniform initialisation (Glorot & Bengio, 2010).
+
+    Draws from Uniform(−limit, +limit) where:
+
