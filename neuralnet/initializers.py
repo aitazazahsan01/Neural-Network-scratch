@@ -102,3 +102,29 @@ class XavierUniform:
 
     Draws from Uniform(−limit, +limit) where:
 
+        limit = sqrt(6 / (fan_in + fan_out))
+
+    This keeps the variance of outputs the same as the variance of inputs
+    under the assumption that the activation is linear (or approximately so,
+    e.g. tanh near zero). Recommended for sigmoid and tanh activations.
+    """
+
+    def __call__(self, shape: tuple) -> np.ndarray:
+        fan_in, fan_out = fan_in_fan_out(shape)
+        limit = np.sqrt(6.0 / (fan_in + fan_out))
+        return np.random.uniform(-limit, limit, size=shape).astype(DTYPE)
+
+    def __repr__(self) -> str:
+        return "XavierUniform()"
+
+
+class XavierNormal:
+    """Glorot normal initialisation.
+
+    Draws from N(0, std) where:
+
+        std = sqrt(2 / (fan_in + fan_out))
+    """
+
+    def __call__(self, shape: tuple) -> np.ndarray:
+        fan_in, fan_out = fan_in_fan_out(shape)
