@@ -180,3 +180,29 @@ class HeUniform:
 
 _REGISTRY = {
     "zeros":          ZeroInit,
+    "random_normal":  RandomNormal,
+    "xavier_uniform": XavierUniform,
+    "xavier_normal":  XavierNormal,
+    "he_normal":      HeNormal,
+    "he_uniform":     HeUniform,
+}
+
+
+def get_initializer(name: str | object, **kwargs):
+    """Return an initialiser instance by name or pass through an instance.
+
+    Parameters
+    ----------
+    name : str or initializer instance
+        Either a registered name string or an already-constructed initialiser.
+    **kwargs
+        Forwarded to the constructor when *name* is a string.
+
+    Examples
+    --------
+    >>> init = get_initializer("he_normal")
+    >>> W = init((128, 64))
+    """
+    if isinstance(name, str):
+        key = name.lower()
+        if key not in _REGISTRY:
