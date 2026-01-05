@@ -128,3 +128,29 @@ class XavierNormal:
 
     def __call__(self, shape: tuple) -> np.ndarray:
         fan_in, fan_out = fan_in_fan_out(shape)
+        std = np.sqrt(2.0 / (fan_in + fan_out))
+        return np.random.randn(*shape).astype(DTYPE) * std
+
+    def __repr__(self) -> str:
+        return "XavierNormal()"
+
+
+class HeNormal:
+    """He / Kaiming normal initialisation (He et al., 2015).
+
+    Draws from N(0, std) where:
+
+        std = sqrt(2 / fan_in)
+
+    Derived by accounting for ReLU's property of zeroing ~half its inputs,
+    which halves the variance. Multiplying by 2 compensates for this.
+
+    This is the *recommended default* whenever you use ReLU or LeakyReLU.
+    """
+
+    def __call__(self, shape: tuple) -> np.ndarray:
+        fan_in, _ = fan_in_fan_out(shape)
+        std = np.sqrt(2.0 / fan_in)
+        return np.random.randn(*shape).astype(DTYPE) * std
+
+    def __repr__(self) -> str:
