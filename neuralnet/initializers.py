@@ -50,3 +50,29 @@ Available classes
 * XavierUniform     – Uniform[−√(6/(fi+fo)), +√(6/(fi+fo))]
 * XavierNormal      – N(0, √(2/(fi+fo)))
 * HeNormal          – N(0, √(2/fan_in))   (recommended for ReLU)
+* HeUniform         – Uniform[−√(6/fan_in), +√(6/fan_in)]
+"""
+
+import numpy as np
+from .tensor import fan_in_fan_out, DTYPE
+
+
+class ZeroInit:
+    """Return an all-zero array of the requested shape.
+
+    Appropriate for biases (b is a learned offset, not a feature detector).
+    *Never* use this for weights: all neurons would produce identical outputs,
+    receive identical gradients, and remain symmetric forever — the network
+    cannot break symmetry and no learning occurs.
+    """
+
+    def __call__(self, shape: tuple) -> np.ndarray:
+        return np.zeros(shape, dtype=DTYPE)
+
+    def __repr__(self) -> str:
+        return "ZeroInit()"
+
+
+class RandomNormal:
+    """Sample weights from N(0, sigma).
+
