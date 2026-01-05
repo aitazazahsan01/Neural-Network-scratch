@@ -154,3 +154,29 @@ class HeNormal:
         return np.random.randn(*shape).astype(DTYPE) * std
 
     def __repr__(self) -> str:
+        return "HeNormal()"
+
+
+class HeUniform:
+    """He / Kaiming uniform initialisation.
+
+    Draws from Uniform(−limit, +limit) where:
+
+        limit = sqrt(6 / fan_in)
+    """
+
+    def __call__(self, shape: tuple) -> np.ndarray:
+        fan_in, _ = fan_in_fan_out(shape)
+        limit = np.sqrt(6.0 / fan_in)
+        return np.random.uniform(-limit, limit, size=shape).astype(DTYPE)
+
+    def __repr__(self) -> str:
+        return "HeUniform()"
+
+
+# ---------------------------------------------------------------------------
+# Convenience factory
+# ---------------------------------------------------------------------------
+
+_REGISTRY = {
+    "zeros":          ZeroInit,
