@@ -102,3 +102,55 @@ from .activations import Activation, Linear, get_activation
 from .initializers import HeNormal, XavierNormal, ZeroInit, get_initializer
 
 
+# ---------------------------------------------------------------------------
+# Dense Layer
+# ---------------------------------------------------------------------------
+
+class DenseLayer:
+    """A fully connected (Dense) layer.
+
+    Parameters
+    ----------
+    n_out : int
+        Number of neurons (output units) in this layer.
+    activation : str or Activation
+        Activation function. Default "relu".
+        Use "linear" for the output of a regression or softmax model.
+        Use "sigmoid" for binary output.
+        Use "softmax" for multi-class output (or use SoftmaxCCE loss +
+        "linear" activation for better numerical stability).
+    weight_init : str or Initializer, optional
+        Weight initialisation strategy. Default adapts to activation:
+        "he_normal" for ReLU/LeakyReLU, "xavier_normal" for others.
+    bias_init : str or Initializer, optional
+        Bias initialisation strategy. Default "zeros".
+    name : str, optional
+        Human-readable layer name (for model summary).
+
+    Attributes (set during build)
+    ----------------------------
+    W : np.ndarray  shape (n_in, n_out)
+    b : np.ndarray  shape (1, n_out)
+
+    Gradient attributes (set during backward)
+    ------------------------------------------
+    dW : np.ndarray  shape (n_in, n_out)
+    db : np.ndarray  shape (1, n_out)
+    """
+
+    def __init__(
+        self,
+        n_out: int,
+        activation: str | Activation = "relu",
+        weight_init: str | object | None = None,
+        bias_init: str | object = "zeros",
+        name: str | None = None,
+    ) -> None:
+        self.n_out = n_out
+        self.activation = get_activation(activation)
+        self.bias_init = get_initializer(bias_init)
+        self.name = name
+
+        # Resolve weight initialiser — default depends on activation type
+        if weight_init is None:
+            act_name = type(self.activation).__name__.lower()
