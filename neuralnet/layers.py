@@ -414,3 +414,5 @@ class DropoutLayer:
             "# Params":     0,
         }
 
+    def __repr__(self) -> str:
+        return f"DropoutLayer(rate={self.rate})"
