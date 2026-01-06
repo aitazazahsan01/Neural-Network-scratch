@@ -50,3 +50,55 @@ The forward pass chains layers:
     Z₂ = A₁ @ W₂ + b₂
     A₂ = f₂(Z₂)
     ...
+    ŷ  = Aₗ                      (output)
+
+    L = loss(y, ŷ)
+
+We *cache* (A_prev, Z) at each layer — they are needed during backprop.
+
+BACKPROPAGATION & THE CHAIN RULE
+----------------------------------
+After the forward pass we have L. We want to update each W and b to
+reduce L. By the chain rule we propagate gradients *backwards*:
+
+    Layer l receives: dA_l = dL/dA_l  (gradient of loss w.r.t. its output)
+
+Step 1 — Gradient through activation:
+    dZ_l = dA_l * f'(Z_l)           (* = element-wise)
+
+Step 2 — Gradient w.r.t. weights:
+    dW_l = A_{l-1}ᵀ @ dZ_l / m
+
+    Derivation:
+        L is a scalar, Z_l = A_{l-1} @ W_l + b_l
+        dL/dW_l = A_{l-1}ᵀ @ dZ_l   (chain rule + transpose rule)
+        Divide by m because Z contains m samples stacked row-wise.
+
+Step 3 — Gradient w.r.t. bias:
+    db_l = mean(dZ_l, axis=0, keepdims=True)
+
+    Derivation:
+        Each bias b_k is added to every sample's pre-activation z_k.
+        dL/db_k = Σ_{i=1}^{m} dL/dz_ik / m  →  mean across samples.
+
+Step 4 — Gradient w.r.t. input (to pass to layer l-1):
+    dA_{l-1} = dZ_l @ W_lᵀ
+
+    Derivation:
+        Z_l = A_{l-1} @ W_l  →  dL/dA_{l-1} = dZ_l @ W_lᵀ
+
+This repeats from the last layer back to the first layer, with each layer
+receiving the dA that the layer *above* it passed back.
+
+Layers implemented
+------------------
+* DenseLayer    – fully connected layer
+* DropoutLayer  – stochastic regularisation (training only)
+"""
+
+import numpy as np
+from .tensor import DTYPE, batch_size
+from .activations import Activation, Linear, get_activation
+from .initializers import HeNormal, XavierNormal, ZeroInit, get_initializer
+
+
