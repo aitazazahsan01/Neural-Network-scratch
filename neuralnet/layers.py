@@ -310,3 +310,55 @@ class DenseLayer:
 
     def summary_row(self) -> dict:
         """Return a dict suitable for the model summary table."""
+        name = self.name or f"Dense({self.n_out})"
+        output_shape = f"(None, {self.n_out})"
+        return {
+            "Layer":        name,
+            "Output Shape": output_shape,
+            "Activation":   repr(self.activation),
+            "# Params":     self.n_params(),
+        }
+
+    def __repr__(self) -> str:
+        built_info = f", n_in={self.n_in}" if self._built else ""
+        return (
+            f"DenseLayer(n_out={self.n_out}, "
+            f"activation={self.activation}{built_info})"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Dropout Layer
+# ---------------------------------------------------------------------------
+
+class DropoutLayer:
+    """Dropout regularisation layer (Srivastava et al., 2014).
+
+    WHAT IS DROPOUT?
+    ----------------
+    During *training*, randomly sets a fraction (rate) of neuron outputs
+    to zero on each forward pass. The remaining outputs are *scaled up* by
+    1/(1-rate) so that the expected value is preserved (inverted dropout).
+
+    WHY DOES THIS HELP?
+    -------------------
+    Overfitting occurs when the network memorises training data rather than
+    learning generalisable patterns. Dropout prevents co-adaptation of
+    neurons: no single neuron can rely on the presence of any other neuron,
+    forcing the network to learn more robust, distributed representations.
+
+    Effect: acts as implicit ensemble training — each forward pass trains a
+    different "thinned" sub-network. At test time (training=False) no
+    dropout is applied and the full network is used (because weights were
+    already scaled up during training via the inverted method).
+
+    INVERTED DROPOUT (the standard approach)
+    -----------------------------------------
+    Training:
+        mask   = Bernoulli(1 - rate)   shape (m, n)
+        A_drop = A * mask / (1 - rate)   ← scale up to preserve E[A_drop] = E[A]
+
+    Inference:
+        A_drop = A                        ← no change needed
+
+    Parameters
