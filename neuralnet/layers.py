@@ -206,3 +206,55 @@ class DenseLayer:
         Returns
         -------
         A : np.ndarray, shape (m, n_out)
+        """
+        if not self._built:
+            self.build(A_prev.shape[1])
+
+        # Linear transformation: Z = X·W + b
+        # b is (1, n_out) — NumPy broadcasts it to (m, n_out)
+        Z = A_prev @ self.W + self.b       # (m, n_out)
+
+        # Non-linear activation: A = f(Z)
+        A = self.activation.forward(Z)     # (m, n_out)
+
+        # Cache what we need for the backward pass
+        self._cache = {"A_prev": A_prev, "Z": Z}
+
+        return A
+
+    # ------------------------------------------------------------------
+    # Backward pass
+    # ------------------------------------------------------------------
+
+    def backward(self, dA: np.ndarray) -> np.ndarray:
+        """Backpropagate gradient through this layer.
+
+        Parameters
+        ----------
+        dA : np.ndarray, shape (m, n_out)
+            Gradient of loss w.r.t. the *output* of this layer (dL/dA).
+            For the last layer this comes from the loss function.
+            For hidden layers this is dA_{l} passed back from layer l+1.
+
+        Returns
+        -------
+        dA_prev : np.ndarray, shape (m, n_in)
+            Gradient to pass to the previous layer (dL/dA_{l-1}).
+
+        Side effects
+        ------------
+        Sets self.dW and self.db — the optimizer reads these to update W, b.
+
+        STEP-BY-STEP DERIVATION
+        -----------------------
+        Given:
+            Z = A_prev @ W + b      (forward pass)
+            A = f(Z)                (activation)
+
+        Chain rule:
+            dL/dZ = dL/dA * df/dZ = dA * f'(Z)          [element-wise *]
+
+        Gradients for parameters:
+            dL/dW = A_prevᵀ @ dZ / m
+            dL/db = mean(dZ, axis=0, keepdims=True)
+
