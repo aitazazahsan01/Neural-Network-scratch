@@ -154,3 +154,55 @@ class DenseLayer:
         # Resolve weight initialiser — default depends on activation type
         if weight_init is None:
             act_name = type(self.activation).__name__.lower()
+            if act_name in ("relu", "leakyrelu"):
+                weight_init = "he_normal"
+            else:
+                weight_init = "xavier_normal"
+        self.weight_init = get_initializer(weight_init)
+
+        # Learnable parameters (initialised during build)
+        self.W: np.ndarray | None = None
+        self.b: np.ndarray | None = None
+
+        # Gradients (computed during backward)
+        self.dW: np.ndarray | None = None
+        self.db: np.ndarray | None = None
+
+        # Forward-pass cache needed by backward
+        self._cache: dict = {}
+
+        self._built = False
+
+    # ------------------------------------------------------------------
+    # Build (called lazily on first forward pass)
+    # ------------------------------------------------------------------
+
+    def build(self, n_in: int) -> None:
+        """Allocate and initialise W and b given the input dimension n_in.
+
+        This is called automatically on the first forward pass so that the
+        user doesn't need to specify input dimensions explicitly — they are
+        inferred from the data (like Keras' `build` method).
+        """
+        self.n_in = n_in
+        self.W = self.weight_init((n_in, self.n_out))   # (n_in, n_out)
+        self.b = self.bias_init((1, self.n_out))         # (1, n_out)
+        self._built = True
+
+    # ------------------------------------------------------------------
+    # Forward pass
+    # ------------------------------------------------------------------
+
+    def forward(self, A_prev: np.ndarray, training: bool = True) -> np.ndarray:
+        """Compute Z = A_prev @ W + b, then A = activation(Z).
+
+        Parameters
+        ----------
+        A_prev : np.ndarray, shape (m, n_in)
+            Output from the previous layer (or raw input X for layer 1).
+        training : bool
+            Whether we are in training mode. Used by Dropout.
+
+        Returns
+        -------
+        A : np.ndarray, shape (m, n_out)
