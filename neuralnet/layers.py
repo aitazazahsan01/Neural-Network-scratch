@@ -362,3 +362,55 @@ class DropoutLayer:
         A_drop = A                        ← no change needed
 
     Parameters
+    ----------
+    rate : float in (0, 1)
+        Fraction of neurons to *drop* (set to zero).
+        Typical values: 0.2–0.5.
+    """
+
+    def __init__(self, rate: float = 0.5, name: str | None = None) -> None:
+        assert 0.0 < rate < 1.0, "Dropout rate must be in (0, 1)."
+        self.rate = rate
+        self.name = name or f"Dropout({rate})"
+        self._mask: np.ndarray | None = None
+
+        # Expose as no-op for optimizer (no learnable params)
+        self.W = None
+        self.b = None
+        self.dW = None
+        self.db = None
+
+    def forward(self, A_prev: np.ndarray, training: bool = True) -> np.ndarray:
+        if training:
+            # Bernoulli mask: 1 with probability (1-rate), 0 with probability rate
+            self._mask = (np.random.rand(*A_prev.shape) > self.rate).astype(DTYPE)
+            return (A_prev * self._mask / (1.0 - self.rate)).astype(DTYPE)
+        # Inference: return unchanged
+        return A_prev.astype(DTYPE)
+
+    def backward(self, dA: np.ndarray) -> np.ndarray:
+        # Only the neurons that were kept contribute to the gradient
+        return (dA * self._mask / (1.0 - self.rate)).astype(DTYPE)
+
+    @property
+    def params(self) -> dict:
+        return {}
+
+    @property
+    def grads(self) -> dict:
+        return {}
+
+    def set_params(self, params: dict) -> None:
+        pass  # no parameters to set
+
+    def n_params(self) -> int:
+        return 0
+
+    def summary_row(self) -> dict:
+        return {
+            "Layer":        self.name,
+            "Output Shape": "(None, same as input)",
+            "Activation":   "—",
+            "# Params":     0,
+        }
+
