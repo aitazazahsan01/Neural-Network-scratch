@@ -258,3 +258,55 @@ class DenseLayer:
             dL/dW = A_prevᵀ @ dZ / m
             dL/db = mean(dZ, axis=0, keepdims=True)
 
+        Gradient to pass backward:
+            dL/dA_prev = dZ @ Wᵀ
+        """
+        A_prev = self._cache["A_prev"]     # (m, n_in)
+        Z      = self._cache["Z"]          # (m, n_out)
+        m      = A_prev.shape[0]
+
+        # Step 1: gradient through activation function
+        dZ = self.activation.backward(dA, Z)   # (m, n_out)
+
+        # Step 2: gradient w.r.t. W
+        self.dW = (A_prev.T @ dZ) / m          # (n_in, n_out)
+
+        # Step 3: gradient w.r.t. b (mean across samples, keep shape (1, n_out))
+        self.db = np.mean(dZ, axis=0, keepdims=True)  # (1, n_out)
+
+        # Step 4: gradient to pass to the previous layer
+        dA_prev = dZ @ self.W.T                # (m, n_in)
+
+        return dA_prev.astype(DTYPE)
+
+    # ------------------------------------------------------------------
+    # Parameter access (used by optimizer)
+    # ------------------------------------------------------------------
+
+    @property
+    def params(self) -> dict:
+        """Return learnable parameters as a dict."""
+        return {"W": self.W, "b": self.b}
+
+    @property
+    def grads(self) -> dict:
+        """Return computed gradients as a dict."""
+        return {"W": self.dW, "b": self.db}
+
+    def set_params(self, params: dict) -> None:
+        """Set parameters (used by optimizer after update step)."""
+        self.W = params["W"]
+        self.b = params["b"]
+
+    # ------------------------------------------------------------------
+    # Info
+    # ------------------------------------------------------------------
+
+    def n_params(self) -> int:
+        """Total number of learnable parameters in this layer."""
+        if not self._built:
+            return 0
+        return self.W.size + self.b.size
+
+    def summary_row(self) -> dict:
+        """Return a dict suitable for the model summary table."""
