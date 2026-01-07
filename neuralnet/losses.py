@@ -106,3 +106,39 @@ class BinaryCrossEntropy(Loss):
         L = -(1/m) Σ [y_i log(ŷ_i) + (1-y_i) log(1-ŷ_i)]
 
     Intuition:
+        • If y=1: loss = -log(ŷ). High ŷ → low loss. Low ŷ → high loss.
+        • If y=0: loss = -log(1-ŷ). Low ŷ → low loss. High ŷ → high loss.
+
+    WHY CROSS-ENTROPY INSTEAD OF MSE FOR CLASSIFICATION?
+    -----------------------------------------------------
+    With MSE + Sigmoid, the loss landscape has many flat regions because
+    σ'(z) ≈ 0 when |z| is large. Cross-entropy + Sigmoid eliminates this
+    problem: the combined gradient dL/dZ = ŷ - y is clean and never
+    vanishes due to saturation.
+
+    BACKWARD (gradient w.r.t. ŷ)
+    --------------------------------
+        dL/dŷ = -(1/m) [y/ŷ - (1-y)/(1-ŷ)]
+              = (1/m) [(ŷ - y) / (ŷ(1-ŷ))]
+
+    When combined with sigmoid's backward (dZ = dA · ŷ(1-ŷ)),
+    the denominator cancels and we get dL/dZ = (ŷ - y)/m — clean!
+
+    Numerical stability: ŷ is clipped away from 0 and 1 to avoid log(0).
+    """
+
+    def compute(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        m = y_true.shape[0]
+        y_pred_clipped = clip(y_pred)
+        loss = -np.sum(
+            y_true * np.log(y_pred_clipped) +
+            (1.0 - y_true) * np.log(1.0 - y_pred_clipped)
+        ) / m
+        return float(loss)
+
+    def gradient(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
+        m = y_true.shape[0]
+        y_pred_clipped = clip(y_pred)
+        # dL/dŷ = (1/m) * [-(y/ŷ) + (1-y)/(1-ŷ)]
+        grad = (
+            -y_true / y_pred_clipped +
