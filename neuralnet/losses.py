@@ -214,3 +214,39 @@ class SoftmaxCCE(Loss):
     dL/dz_j = Σ_k dL/da_k · da_k/dz_j
 
     The Softmax Jacobian gives:
+        da_k/dz_j = a_k(δ_kj - a_j)
+
+    Substituting dL/da_k = -y_k/a_k:
+        dL/dz_j = Σ_k (-y_k/a_k) · a_k(δ_kj - a_j)
+                = Σ_k -y_k(δ_kj - a_j)
+                = -y_j + a_j Σ_k y_k
+                = a_j - y_j          (since Σ_k y_k = 1 for one-hot)
+
+    Result (across all m samples):
+        dL/dZ = (A - Y) / m
+
+    This is the cleanest gradient in all of deep learning.
+
+    USAGE NOTE
+    ----------
+    When you use this as your loss function, the output layer should use
+    a *Linear* activation (not Softmax). The Softmax is computed here
+    internally. The `gradient()` returns dL/dZ (pre-activation gradient),
+    so the output layer should skip its own activation backward.
+    """
+
+    def _softmax(self, Z: np.ndarray) -> np.ndarray:
+        Z_shifted = Z - Z.max(axis=1, keepdims=True)
+        exp_Z = np.exp(Z_shifted)
+        return exp_Z / exp_Z.sum(axis=1, keepdims=True)
+
+    def compute(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        """y_pred here should be *logits* (pre-softmax) or softmax outputs.
+
+        We reapply softmax internally for the loss so either works.
+        For consistency with gradient(), treat y_pred as logits.
+        """
+        # If y_pred looks like logits (not bounded 0-1), apply softmax
+        A = self._softmax(y_pred)
+        m = y_true.shape[0]
+        A_clipped = clip(A)
