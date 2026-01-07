@@ -70,3 +70,39 @@ class MSE(Loss):
     We divide by 2 for cleaner gradient expressions (the 2 cancels).
 
     BACKWARD (gradient w.r.t. ŷ)
+    ------------------------------
+        dL/dŷ_i = (ŷ_i - y_i) / m
+
+    Full derivation:
+        dL/dŷ_k = d/dŷ_k [(1/2m) Σ (y_j - ŷ_j)²]
+                = (1/2m) · 2(ŷ_k - y_k)
+                = (ŷ_k - y_k) / m
+
+    The gradient is *positive* when ŷ > y (prediction too high) and
+    *negative* when ŷ < y (prediction too low). This makes intuitive
+    sense: gradient descent will push ŷ down or up accordingly.
+    """
+
+    def compute(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        m = y_true.shape[0]
+        return float(np.sum((y_true - y_pred) ** 2) / (2.0 * m))
+
+    def gradient(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
+        m = y_true.shape[0]
+        return ((y_pred - y_true) / m).astype(DTYPE)
+
+
+# ---------------------------------------------------------------------------
+# Binary Cross-Entropy — Binary Classification
+# ---------------------------------------------------------------------------
+
+class BinaryCrossEntropy(Loss):
+    """Binary Cross-Entropy (Log Loss): for binary classifiers (sigmoid output).
+
+    Each label y_i ∈ {0, 1}. The network outputs ŷ_i ∈ (0, 1) via sigmoid.
+
+    FORWARD (loss value)
+    --------------------
+        L = -(1/m) Σ [y_i log(ŷ_i) + (1-y_i) log(1-ŷ_i)]
+
+    Intuition:
