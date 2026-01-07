@@ -142,3 +142,39 @@ class BinaryCrossEntropy(Loss):
         # dL/dŷ = (1/m) * [-(y/ŷ) + (1-y)/(1-ŷ)]
         grad = (
             -y_true / y_pred_clipped +
+            (1.0 - y_true) / (1.0 - y_pred_clipped)
+        ) / m
+        return grad.astype(DTYPE)
+
+
+# ---------------------------------------------------------------------------
+# Categorical Cross-Entropy — Multi-class Classification
+# ---------------------------------------------------------------------------
+
+class CategoricalCrossEntropy(Loss):
+    """Categorical Cross-Entropy for multi-class classification.
+
+    Labels y_true are one-hot encoded: shape (m, K) where K = number of classes.
+    Predictions y_pred are softmax outputs: shape (m, K), each row sums to 1.
+
+    FORWARD (loss value)
+    --------------------
+        L = -(1/m) Σ_{i=1}^{m} Σ_{k=1}^{K} y_ik · log(ŷ_ik)
+
+    Because y is one-hot (only one k per row equals 1), this simplifies to:
+
+        L = -(1/m) Σ_{i=1}^{m} log(ŷ_{i, true_class_i})
+
+    Only the log-probability of the correct class contributes to the loss.
+
+    BACKWARD (gradient w.r.t. ŷ)
+    --------------------------------
+        dL/dŷ_ik = -(1/m) · y_ik / ŷ_ik
+
+    NOTE: When used together with Softmax, use SoftmaxCCE below instead.
+    That class computes the combined gradient dL/dZ = (ŷ - y)/m directly,
+    which is more stable and avoids the Softmax Jacobian entirely.
+    """
+
+    def compute(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        m = y_true.shape[0]
