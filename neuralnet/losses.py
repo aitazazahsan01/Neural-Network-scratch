@@ -286,3 +286,5 @@ def get_loss(name: str | object) -> Loss:
             raise ValueError(
                 f"Unknown loss '{name}'. Available: {list(_REGISTRY.keys())}"
             )
+        return _REGISTRY[key]()
+    return name
