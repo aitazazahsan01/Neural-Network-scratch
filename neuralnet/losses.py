@@ -250,3 +250,39 @@ class SoftmaxCCE(Loss):
         A = self._softmax(y_pred)
         m = y_true.shape[0]
         A_clipped = clip(A)
+        loss = -np.sum(y_true * np.log(A_clipped)) / m
+        return float(loss)
+
+    def gradient(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
+        """Returns dL/dZ = (softmax(Z) - Y) / m.
+
+        y_pred should be the raw logits Z (output of Linear layer).
+        """
+        m = y_true.shape[0]
+        A = self._softmax(y_pred)
+        return ((A - y_true) / m).astype(DTYPE)
+
+
+# ---------------------------------------------------------------------------
+# Registry / factory
+# ---------------------------------------------------------------------------
+
+_REGISTRY = {
+    "mse":                    MSE,
+    "mean_squared_error":     MSE,
+    "bce":                    BinaryCrossEntropy,
+    "binary_crossentropy":    BinaryCrossEntropy,
+    "cce":                    CategoricalCrossEntropy,
+    "categorical_crossentropy": CategoricalCrossEntropy,
+    "softmax_cce":            SoftmaxCCE,
+}
+
+
+def get_loss(name: str | object) -> Loss:
+    """Return a loss instance by name or pass through an instance."""
+    if isinstance(name, str):
+        key = name.lower()
+        if key not in _REGISTRY:
+            raise ValueError(
+                f"Unknown loss '{name}'. Available: {list(_REGISTRY.keys())}"
+            )
