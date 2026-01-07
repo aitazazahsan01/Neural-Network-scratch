@@ -178,3 +178,39 @@ class CategoricalCrossEntropy(Loss):
 
     def compute(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         m = y_true.shape[0]
+        y_pred_clipped = clip(y_pred)
+        # Only sum terms where y_true = 1 (exploits one-hot structure)
+        loss = -np.sum(y_true * np.log(y_pred_clipped)) / m
+        return float(loss)
+
+    def gradient(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
+        m = y_true.shape[0]
+        y_pred_clipped = clip(y_pred)
+        return (-y_true / y_pred_clipped / m).astype(DTYPE)
+
+
+# ---------------------------------------------------------------------------
+# Softmax + CCE fused — numerically stable, for multi-class output layers
+# ---------------------------------------------------------------------------
+
+class SoftmaxCCE(Loss):
+    """Numerically stable fusion of Softmax activation + Categorical Cross-Entropy.
+
+    WHY FUSE THEM?
+    --------------
+    The standalone CCE gradient dL/dŷ = -y/ŷ, when multiplied by the
+    full Softmax Jacobian, simplifies beautifully:
+
+        dL/dZ = ŷ - y     (one line — no Jacobian computation needed)
+
+    This is both faster and more numerically stable than computing them
+    separately. It also avoids dividing by potentially very small ŷ values.
+
+    DERIVATION
+    -----------
+    Let a_k = softmax(z)_k = exp(z_k) / Σ exp(z_j).
+    The CCE loss for one sample: L = -Σ_k y_k log(a_k).
+
+    dL/dz_j = Σ_k dL/da_k · da_k/dz_j
+
+    The Softmax Jacobian gives:
