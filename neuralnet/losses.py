@@ -34,3 +34,39 @@ import numpy as np
 from .tensor import clip, EPSILON, DTYPE
 
 
+# ---------------------------------------------------------------------------
+# Base class
+# ---------------------------------------------------------------------------
+
+class Loss:
+    """Abstract base for all loss functions."""
+
+    def compute(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        raise NotImplementedError
+
+    def gradient(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
+        raise NotImplementedError
+
+    def __call__(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        return self.compute(y_true, y_pred)
+
+    def __repr__(self) -> str:
+        return self.__class__.__name__ + "()"
+
+
+# ---------------------------------------------------------------------------
+# Mean Squared Error — Regression
+# ---------------------------------------------------------------------------
+
+class MSE(Loss):
+    """Mean Squared Error: L = (1/m) Σ (y - ŷ)².
+
+    Use when the target is a continuous real value (regression).
+
+    FORWARD (loss value)
+    --------------------
+        L = (1 / (2m)) Σ_{i=1}^{m} (y_i - ŷ_i)²
+
+    We divide by 2 for cleaner gradient expressions (the 2 cancels).
+
+    BACKWARD (gradient w.r.t. ŷ)
