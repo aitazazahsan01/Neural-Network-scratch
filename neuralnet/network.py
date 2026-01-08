@@ -283,3 +283,60 @@ class Sequential:
         3. For each mini-batch:
             a. Forward pass → ŷ
             b. Loss → L
+            c. Backward pass → dW, db for every layer
+            d. Optimizer step → update W, b
+        4. Compute epoch-level train/val metrics.
+
+        WHY SHUFFLE?
+        ------------
+        If we always feed data in the same order, the model might overfit
+        to the order. Shuffling ensures every mini-batch has a different
+        composition, making the gradient estimate more representative.
+        """
+        assert self._compiled, "Call model.compile() before model.fit()."
+
+        X = to_array(X)
+        y = to_array(y)
+        m = X.shape[0]
+
+        if batch_size == -1:
+            batch_size = m   # full-batch GD
+
+        history = {k: [] for k in self._history}
+
+        t0 = time.time()
+
+        for epoch in range(1, epochs + 1):
+
+            # 1. Shuffle
+            idx = np.random.permutation(m)
+            X_shuffled = X[idx]
+            y_shuffled = y[idx]
+
+            # 2. Mini-batch loop
+            epoch_losses = []
+            for start in range(0, m, batch_size):
+                end     = min(start + batch_size, m)
+                X_batch = X_shuffled[start:end]
+                y_batch = y_shuffled[start:end]
+
+                # a. Forward
+                y_pred = self.forward(X_batch, training=True)
+
+                # b. Loss
+                loss_val = self._loss.compute(y_batch, y_pred)
+                epoch_losses.append(loss_val)
+
+                # c. Backward
+                self.backward(y_batch, y_pred)
+
+                # d. Optimizer update
+                self._optimizer_step()
+
+            # 3. Epoch metrics
+            train_loss = float(np.mean(epoch_losses))
+            history["train_loss"].append(train_loss)
+
+            # Training accuracy
+            train_acc = self._compute_accuracy(X, y)
+            history["train_acc"].append(train_acc)
