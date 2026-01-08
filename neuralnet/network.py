@@ -55,3 +55,60 @@ from .optimizers import get_optimizer, Optimizer
 from .layers import DenseLayer, DropoutLayer
 from .utils.metrics import accuracy
 
+
+# ---------------------------------------------------------------------------
+# Sequential model
+# ---------------------------------------------------------------------------
+
+class Sequential:
+    """A linear stack of layers forming a feedforward neural network.
+
+    Parameters
+    ----------
+    layers : list, optional
+        Pre-existing list of layer objects. You can also add layers
+        incrementally with `.add()`.
+
+    Examples
+    --------
+    >>> from neuralnet import Sequential, DenseLayer
+    >>> model = Sequential([
+    ...     DenseLayer(64, activation="relu"),
+    ...     DenseLayer(1,  activation="sigmoid"),
+    ... ])
+    >>> model.compile(loss="bce", optimizer="adam")
+    >>> history = model.fit(X_train, y_train, epochs=100)
+    """
+
+    def __init__(self, layers: list | None = None) -> None:
+        self.layers: list = layers if layers is not None else []
+        self._loss: Loss | None = None
+        self._optimizer: Optimizer | None = None
+        self._compiled = False
+        self._history: dict = {
+            "train_loss": [],
+            "val_loss":   [],
+            "train_acc":  [],
+            "val_acc":    [],
+        }
+
+    # ------------------------------------------------------------------
+    # Building the model
+    # ------------------------------------------------------------------
+
+    def add(self, layer) -> "Sequential":
+        """Append a layer to the network.
+
+        Returns self so calls can be chained:
+            model.add(DenseLayer(64)).add(DenseLayer(1))
+        """
+        self.layers.append(layer)
+        return self
+
+    def compile(
+        self,
+        loss: str | Loss,
+        optimizer: str | Optimizer = "adam",
+        learning_rate: float | None = None,
+    ) -> None:
+        """Set the loss function and optimizer.
