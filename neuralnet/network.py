@@ -340,3 +340,60 @@ class Sequential:
             # Training accuracy
             train_acc = self._compute_accuracy(X, y)
             history["train_acc"].append(train_acc)
+
+            # Validation metrics
+            if validation_data is not None:
+                X_val, y_val = validation_data
+                val_pred  = self.forward(to_array(X_val), training=False)
+                val_loss  = self._loss.compute(to_array(y_val), val_pred)
+                val_acc   = self._compute_accuracy(X_val, y_val)
+                history["val_loss"].append(float(val_loss))
+                history["val_acc"].append(val_acc)
+            else:
+                history["val_loss"].append(None)
+                history["val_acc"].append(None)
+
+            # 4. Logging
+            if verbose == 1 and (epoch % verbose_every == 0 or epoch == 1):
+                elapsed = time.time() - t0
+                msg = (
+                    f"Epoch {epoch:>5}/{epochs}  "
+                    f"loss: {train_loss:.6f}  "
+                    f"acc: {train_acc:.4f}"
+                )
+                if validation_data is not None:
+                    msg += (
+                        f"  |  val_loss: {history['val_loss'][-1]:.6f}"
+                        f"  val_acc: {history['val_acc'][-1]:.4f}"
+                    )
+                msg += f"  [{elapsed:.1f}s]"
+                print(msg)
+
+        # Store history on the instance as well
+        self._history = history
+        return history
+
+    # ------------------------------------------------------------------
+    # Inference
+    # ------------------------------------------------------------------
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Run the forward pass in inference mode (no dropout).
+
+        Parameters
+        ----------
+        X : np.ndarray, shape (m, n_features)
+
+        Returns
+        -------
+        np.ndarray : raw model outputs (probabilities or logits).
+        """
+        return self.forward(to_array(X), training=False)
+
+    def predict_classes(self, X: np.ndarray) -> np.ndarray:
+        """Return the predicted class index for each sample.
+
+        For binary outputs (shape (m, 1)): rounds to 0 or 1.
+        For multi-class outputs (shape (m, K)): argmax across classes.
+        """
+        y_pred = self.predict(X)
