@@ -169,3 +169,60 @@ class Sequential:
 
         Parameters
         ----------
+        y_true : np.ndarray
+        y_pred : np.ndarray  — output of forward pass
+        """
+        # Compute initial gradient dL/dŷ from the loss function
+        dA = self._loss.gradient(y_true, y_pred)
+
+        # Special case: SoftmaxCCE returns dL/dZ (pre-activation gradient)
+        # so the last layer must skip its activation backward.
+        # We signal this by temporarily replacing the last Dense layer's
+        # activation backward with identity during this specific backward.
+        if isinstance(self._loss, SoftmaxCCE):
+            # dA is already dL/dZ for the output layer's Linear activation
+            # Iterate layers in reverse, but skip the last layer's activation
+            dA = self._backward_layers(dA, skip_last_activation=True)
+        else:
+            dA = self._backward_layers(dA, skip_last_activation=False)
+
+    def _backward_layers(
+        self,
+        dA: np.ndarray,
+        skip_last_activation: bool,
+    ) -> np.ndarray:
+        """Internal: propagate dA backwards through the layer list."""
+        last_idx = len(self.layers) - 1
+        for i, layer in enumerate(reversed(self.layers)):
+            actual_idx = last_idx - i
+
+            if skip_last_activation and actual_idx == last_idx:
+                # SoftmaxCCE already computed dL/dZ so we skip activation step.
+                # Temporarily inject dZ directly into the Dense layer's backward
+                # by calling _backward_skip_activation.
+                if isinstance(layer, DenseLayer):
+                    dA = self._dense_backward_no_activation(layer, dA)
+                else:
+                    dA = layer.backward(dA)
+            else:
+                dA = layer.backward(dA)
+
+        return dA
+
+    def _dense_backward_no_activation(
+        self, layer: DenseLayer, dZ: np.ndarray
+    ) -> np.ndarray:
+        """Backward through a Dense layer when dZ is provided directly.
+
+        Used when SoftmaxCCE already computed dL/dZ so we skip f'(Z).
+        SoftmaxCCE.gradient() already divides by m, so dZ carries the 1/m
+        factor. Do NOT divide by m again here.
+        """
+        A_prev = layer._cache["A_prev"]
+
+        layer.dW = A_prev.T @ dZ                    # dZ already has 1/m
+        layer.db = dZ.sum(axis=0, keepdims=True)    # sum, not mean (1/m in dZ)
+        dA_prev = dZ @ layer.W.T
+
+        return dA_prev.astype(DTYPE)
+
