@@ -112,3 +112,60 @@ class Sequential:
         learning_rate: float | None = None,
     ) -> None:
         """Set the loss function and optimizer.
+
+        Parameters
+        ----------
+        loss : str or Loss instance
+            E.g. "mse", "bce", "cce", "softmax_cce".
+        optimizer : str or Optimizer instance
+            E.g. "sgd", "momentum", "rmsprop", "adam".
+        learning_rate : float, optional
+            If provided, overrides the optimizer's default lr.
+        """
+        self._loss = get_loss(loss)
+
+        if isinstance(optimizer, str):
+            kwargs = {}
+            if learning_rate is not None:
+                kwargs["lr"] = learning_rate
+            self._optimizer = get_optimizer(optimizer, **kwargs)
+        else:
+            self._optimizer = optimizer
+            if learning_rate is not None:
+                self._optimizer.lr = learning_rate
+
+        self._compiled = True
+
+    # ------------------------------------------------------------------
+    # Forward pass
+    # ------------------------------------------------------------------
+
+    def forward(self, X: np.ndarray, training: bool = True) -> np.ndarray:
+        """Chain-call forward() through all layers.
+
+        Parameters
+        ----------
+        X : np.ndarray, shape (m, n_features)
+        training : bool
+            Passed to layers that behave differently during training (Dropout).
+
+        Returns
+        -------
+        output : np.ndarray, shape (m, n_output)
+        """
+        A = to_array(X)
+        for layer in self.layers:
+            A = layer.forward(A, training=training)
+        return A
+
+    # ------------------------------------------------------------------
+    # Backward pass
+    # ------------------------------------------------------------------
+
+    def backward(self, y_true: np.ndarray, y_pred: np.ndarray) -> None:
+        """Backpropagate loss gradient through all layers (reversed order).
+
+        Computes and stores .dW and .db on every layer.
+
+        Parameters
+        ----------
