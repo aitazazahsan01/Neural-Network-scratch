@@ -397,3 +397,60 @@ class Sequential:
         For multi-class outputs (shape (m, K)): argmax across classes.
         """
         y_pred = self.predict(X)
+        if y_pred.shape[1] == 1:
+            return (y_pred >= 0.5).astype(int).ravel()
+        return np.argmax(y_pred, axis=1)
+
+    # ------------------------------------------------------------------
+    # Evaluation
+    # ------------------------------------------------------------------
+
+    def evaluate(
+        self,
+        X: np.ndarray,
+        y: np.ndarray,
+    ) -> dict:
+        """Compute loss and accuracy on a dataset.
+
+        Returns
+        -------
+        dict with keys "loss" and "accuracy".
+        """
+        y_pred = self.predict(X)
+        loss   = self._loss.compute(to_array(y), y_pred)
+        acc    = self._compute_accuracy(X, y)
+        print(f"Loss: {loss:.6f}  Accuracy: {acc:.4f}")
+        return {"loss": float(loss), "accuracy": acc}
+
+    def _compute_accuracy(self, X: np.ndarray, y: np.ndarray) -> float:
+        """Internal helper: forward + accuracy."""
+        y_pred = self.predict(X)
+        return accuracy(to_array(y), y_pred)
+
+    # ------------------------------------------------------------------
+    # Model summary
+    # ------------------------------------------------------------------
+
+    def summary(self) -> None:
+        """Print a human-readable table of layer types, shapes, and param counts."""
+        print("\n" + "=" * 65)
+        print(f"{'Layer':<20} {'Output Shape':<18} {'Activation':<14} {'# Params':>8}")
+        print("-" * 65)
+        total_params = 0
+        for layer in self.layers:
+            row = layer.summary_row()
+            print(
+                f"{row['Layer']:<20} "
+                f"{row['Output Shape']:<18} "
+                f"{row['Activation']:<14} "
+                f"{row['# Params']:>8,}"
+            )
+            total_params += row["# Params"]
+        print("=" * 65)
+        print(f"{'Total parameters':<40} {total_params:>8,}")
+        print(f"{'Loss function':<40} {repr(self._loss)}")
+        print(f"{'Optimizer':<40} {repr(self._optimizer)}")
+        print("=" * 65 + "\n")
+
+    def __repr__(self) -> str:
+        return f"Sequential(layers={len(self.layers)}, loss={self._loss})"
