@@ -226,3 +226,60 @@ class Sequential:
 
         return dA_prev.astype(DTYPE)
 
+    # ------------------------------------------------------------------
+    # Optimizer step
+    # ------------------------------------------------------------------
+
+    def _optimizer_step(self) -> None:
+        """Apply the optimizer update to every trainable layer's parameters."""
+        for layer_id, layer in enumerate(self.layers):
+            if not layer.params:
+                continue  # skip non-trainable layers (Dropout)
+            updated = self._optimizer.update(layer_id, layer.params, layer.grads)
+            layer.set_params(updated)
+        self._optimizer.step()
+
+    # ------------------------------------------------------------------
+    # Training
+    # ------------------------------------------------------------------
+
+    def fit(
+        self,
+        X: np.ndarray,
+        y: np.ndarray,
+        epochs: int = 100,
+        batch_size: int = 32,
+        validation_data: tuple | None = None,
+        verbose: int = 1,
+        verbose_every: int = 10,
+    ) -> dict:
+        """Train the network.
+
+        Parameters
+        ----------
+        X : np.ndarray, shape (m, n_features)
+        y : np.ndarray, shape (m,) or (m, n_classes)
+        epochs : int
+            Number of full passes through the training data.
+        batch_size : int
+            Samples per mini-batch. Use -1 for full-batch gradient descent.
+        validation_data : tuple (X_val, y_val), optional
+            If provided, compute val_loss and val_acc after each epoch.
+        verbose : int
+            0 = silent, 1 = progress every `verbose_every` epochs.
+        verbose_every : int
+            Print interval when verbose=1. Default every 10 epochs.
+
+        Returns
+        -------
+        history : dict
+            Keys: "train_loss", "val_loss", "train_acc", "val_acc".
+            Each value is a list with one entry per epoch.
+
+        WHAT HAPPENS EACH EPOCH?
+        -------------------------
+        1. Shuffle the training data (so mini-batches are different each time).
+        2. Split into mini-batches.
+        3. For each mini-batch:
+            a. Forward pass → ŷ
+            b. Loss → L
