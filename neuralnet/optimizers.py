@@ -348,3 +348,53 @@ class Adam(Optimizer):
             if grads.get(key) is None:
                 updated[key] = params[key]
                 continue
+
+            m = self._state[layer_id]["m"][key]
+            v = self._state[layer_id]["v"][key]
+
+            # 1st moment (momentum)
+            m = self.beta1 * m + (1.0 - self.beta1) * grads[key]
+            # 2nd moment (RMSProp)
+            v = self.beta2 * v + (1.0 - self.beta2) * (grads[key] ** 2)
+
+            # Store updated moments
+            self._state[layer_id]["m"][key] = m
+            self._state[layer_id]["v"][key] = v
+
+            # Bias-corrected estimates
+            m_hat = m / (1.0 - self.beta1 ** t)
+            v_hat = v / (1.0 - self.beta2 ** t)
+
+            # Parameter update
+            updated[key] = params[key] - self.lr * m_hat / (np.sqrt(v_hat) + self.epsilon)
+
+        return updated
+
+    def __repr__(self) -> str:
+        return (
+            f"Adam(lr={self.lr}, beta1={self.beta1}, beta2={self.beta2})"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Registry / factory
+# ---------------------------------------------------------------------------
+
+_REGISTRY = {
+    "sgd":          SGD,
+    "momentum":     SGDMomentum,
+    "sgd_momentum": SGDMomentum,
+    "rmsprop":      RMSProp,
+    "adam":         Adam,
+}
+
+
+def get_optimizer(name: str | object, **kwargs) -> Optimizer:
+    """Return an optimizer instance by name or pass through an instance."""
+    if isinstance(name, str):
+        key = name.lower()
+        if key not in _REGISTRY:
+            raise ValueError(
+                f"Unknown optimizer '{name}'. "
+                f"Available: {list(_REGISTRY.keys())}"
+            )
