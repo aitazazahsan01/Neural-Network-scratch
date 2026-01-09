@@ -98,3 +98,53 @@ class Optimizer:
     def step(self) -> None:
         """Increment the global step counter (called once per batch)."""
         self._step += 1
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(lr={self.lr})"
+
+
+# ---------------------------------------------------------------------------
+# SGD
+# ---------------------------------------------------------------------------
+
+class SGD(Optimizer):
+    """Vanilla Stochastic Gradient Descent.
+
+    Update rule:
+        W ← W - lr * dW
+
+    "Stochastic" because we compute the gradient on a *mini-batch*
+    (a random subset of the training data) rather than the full dataset.
+
+    Mini-batch gradient descent is a compromise between:
+        • Full-batch GD: accurate gradient, but slow (uses all data).
+        • SGD (single sample): fast, but extremely noisy gradient.
+
+    Mini-batches (typically 32–512 samples) give a good gradient
+    estimate while keeping computation tractable.
+
+    Parameters
+    ----------
+    lr : float
+        Learning rate η (step size). Default 0.01.
+    """
+
+    def __init__(self, lr: float = 0.01) -> None:
+        super().__init__(lr)
+
+    def update(self, layer_id: int, params: dict, grads: dict) -> dict:
+        updated = {}
+        for key in params:
+            if grads.get(key) is None:
+                updated[key] = params[key]
+                continue
+            # W ← W - η·dW
+            updated[key] = params[key] - self.lr * grads[key]
+        return updated
+
+
+# ---------------------------------------------------------------------------
+# SGD + Momentum
+# ---------------------------------------------------------------------------
+
+class SGDMomentum(Optimizer):
