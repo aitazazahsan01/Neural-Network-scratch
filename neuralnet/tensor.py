@@ -20,3 +20,14 @@ import numpy as np
 
 
 # ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+DTYPE = np.float64          # single source of truth for precision
+EPSILON = 1e-8              # small constant used to avoid log(0) or /0
+
+
+# ---------------------------------------------------------------------------
+# Core utilities
+# ---------------------------------------------------------------------------
+
+def to_array(x: object, dtype: type = DTYPE) -> np.ndarray:
