@@ -248,3 +248,53 @@ class RMSProp(Optimizer):
         lr: float = 0.001,
         beta: float = 0.9,
         epsilon: float = EPSILON,
+    ) -> None:
+        super().__init__(lr)
+        self.beta = beta
+        self.epsilon = epsilon
+
+    def update(self, layer_id: int, params: dict, grads: dict) -> dict:
+        if layer_id not in self._state:
+            self._state[layer_id] = {
+                key: np.zeros_like(params[key], dtype=DTYPE)
+                for key in params
+            }
+
+        updated = {}
+        for key in params:
+            if grads.get(key) is None:
+                updated[key] = params[key]
+                continue
+
+            s = self._state[layer_id][key]
+
+            # s ← β·s + (1-β)·dW²
+            s = self.beta * s + (1.0 - self.beta) * (grads[key] ** 2)
+            self._state[layer_id][key] = s
+
+            # W ← W - lr · dW / √(s + ε)
+            updated[key] = params[key] - self.lr * grads[key] / (np.sqrt(s) + self.epsilon)
+
+        return updated
+
+
+# ---------------------------------------------------------------------------
+# Adam
+# ---------------------------------------------------------------------------
+
+class Adam(Optimizer):
+    """Adam: Adaptive Moment Estimation (Kingma & Ba, 2015).
+
+    Combines momentum (1st moment) and RMSProp (2nd moment):
+
+        m  ← β₁·m  + (1-β₁)·dW          (biased 1st moment estimate)
+        v  ← β₂·v  + (1-β₂)·dW²         (biased 2nd moment estimate)
+
+    Bias correction (compensates for initialisation at zero):
+        m̂  = m  / (1 - β₁ᵗ)
+        v̂  = v  / (1 - β₂ᵗ)
+
+    Update:
+        W  ← W - lr · m̂ / (√v̂ + ε)
+
+    WHY BIAS CORRECTION?
