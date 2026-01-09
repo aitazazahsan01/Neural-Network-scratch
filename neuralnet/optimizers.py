@@ -398,3 +398,5 @@ def get_optimizer(name: str | object, **kwargs) -> Optimizer:
                 f"Unknown optimizer '{name}'. "
                 f"Available: {list(_REGISTRY.keys())}"
             )
+        return _REGISTRY[key](**kwargs)
+    return name
