@@ -198,3 +198,53 @@ class SGDMomentum(Optimizer):
 
             v = self._state[layer_id][key]
 
+            # Velocity update: v ← β·v + (1-β)·dW
+            v = self.beta * v + (1.0 - self.beta) * grads[key]
+            self._state[layer_id][key] = v
+
+            # Parameter update: W ← W - lr·v
+            updated[key] = params[key] - self.lr * v
+
+        return updated
+
+
+# ---------------------------------------------------------------------------
+# RMSProp
+# ---------------------------------------------------------------------------
+
+class RMSProp(Optimizer):
+    """RMSProp (Hinton, unpublished but widely cited, ~2012).
+
+    Maintains an exponential moving average of *squared* gradients:
+
+        s ← β·s + (1-β)·dW²
+        W ← W - lr · dW / √(s + ε)
+
+    INTUITION
+    ----------
+    If a parameter has consistently *large* gradients, s is large →
+    effective lr is small → step size is reduced automatically.
+
+    If a parameter has small gradients, s is small → effective lr is
+    large → larger relative steps.
+
+    This *adapts* the learning rate per parameter. Parameters in flat
+    regions get larger updates; parameters in steep regions get smaller.
+
+    ε prevents division by zero (default 1e-8).
+
+    Parameters
+    ----------
+    lr : float
+        Global learning rate. Default 0.001.
+    beta : float
+        Decay factor for squared-gradient moving average. Default 0.9.
+    epsilon : float
+        Numerical stability constant. Default 1e-8.
+    """
+
+    def __init__(
+        self,
+        lr: float = 0.001,
+        beta: float = 0.9,
+        epsilon: float = EPSILON,
