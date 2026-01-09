@@ -48,3 +48,53 @@ Implemented optimizers
 
 4. Adam (Adaptive Moment Estimation)
    m ← β₁*m + (1-β₁)*dW          (1st moment / momentum)
+   v ← β₂*v + (1-β₂)*dW²         (2nd moment / RMSProp)
+   m̂ ← m / (1-β₁ᵗ)               (bias correction)
+   v̂ ← v / (1-β₂ᵗ)               (bias correction)
+   W ← W - lr * m̂ / (√v̂ + ε)
+
+   Adam combines Momentum + RMSProp with bias correction for the
+   fact that m and v start at 0 (biased toward 0 early in training).
+   Recommended default for most networks.
+
+Each optimizer stores state (velocities, squared-gradient accumulations)
+as a dict keyed by layer index and parameter name.
+"""
+
+import numpy as np
+from .tensor import DTYPE, EPSILON
+
+
+# ---------------------------------------------------------------------------
+# Base class
+# ---------------------------------------------------------------------------
+
+class Optimizer:
+    """Abstract base for all optimizers."""
+
+    def __init__(self, lr: float = 0.01) -> None:
+        self.lr = lr
+        self._state: dict = {}          # persistent state across update calls
+        self._step: int = 0             # global step counter (used for bias correction)
+
+    def update(self, layer_id: int, params: dict, grads: dict) -> dict:
+        """Update *params* using *grads* and return the new params dict.
+
+        Parameters
+        ----------
+        layer_id : int
+            Unique identifier for the layer (used as state key).
+        params : dict
+            {"W": np.ndarray, "b": np.ndarray}
+        grads : dict
+            {"W": np.ndarray, "b": np.ndarray}
+
+        Returns
+        -------
+        dict : updated params
+        """
+        raise NotImplementedError
+
+    def step(self) -> None:
+        """Increment the global step counter (called once per batch)."""
+        self._step += 1
