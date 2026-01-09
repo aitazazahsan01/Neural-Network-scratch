@@ -148,3 +148,53 @@ class SGD(Optimizer):
 # ---------------------------------------------------------------------------
 
 class SGDMomentum(Optimizer):
+    """SGD with Momentum (Polyak, 1964).
+
+    Maintains a velocity vector v that accumulates an exponentially
+    decaying average of past gradients:
+
+        v ← β·v + (1-β)·dW
+        W ← W - lr·v
+
+    INTUITION
+    ----------
+    Think of a ball rolling down a hill:
+        • In directions with consistent gradients, velocity builds up → faster.
+        • In directions with oscillating gradients, velocity averages out → smoother.
+    Momentum dampens oscillations and accelerates convergence in the
+    consistent gradient direction.
+
+    WHY (1-β) INSTEAD OF JUST β·v + dW?
+    ------------------------------------
+    The (1-β) factor scales the gradient so that v's magnitude is
+    comparable to dW regardless of β. Some texts omit (1-β) and absorb
+    it into lr — both formulations are equivalent with a rescaled lr.
+
+    Parameters
+    ----------
+    lr : float
+        Learning rate. Typical: 0.001–0.1.
+    beta : float
+        Momentum decay factor. Default 0.9 (recommended).
+    """
+
+    def __init__(self, lr: float = 0.01, beta: float = 0.9) -> None:
+        super().__init__(lr)
+        self.beta = beta
+
+    def update(self, layer_id: int, params: dict, grads: dict) -> dict:
+        if layer_id not in self._state:
+            # Initialise velocity to zeros, matching parameter shapes
+            self._state[layer_id] = {
+                key: np.zeros_like(params[key], dtype=DTYPE)
+                for key in params
+            }
+
+        updated = {}
+        for key in params:
+            if grads.get(key) is None:
+                updated[key] = params[key]
+                continue
+
+            v = self._state[layer_id][key]
+
