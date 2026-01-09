@@ -298,3 +298,53 @@ class Adam(Optimizer):
         W  ← W - lr · m̂ / (√v̂ + ε)
 
     WHY BIAS CORRECTION?
+    ---------------------
+    At step t=1, m = (1-β₁)·dW₁. If β₁=0.9, m ≈ 0.1·dW₁ — far smaller
+    than the true gradient. Dividing by (1-β₁¹) = 0.1 restores the
+    estimate to the true gradient scale. As t grows, β₁ᵗ → 0 and the
+    correction vanishes (moments have "warmed up").
+
+    HYPERPARAMETER DEFAULTS (Kingma & Ba recommendation)
+    -------------------------------------------------------
+        lr   = 0.001
+        β₁   = 0.9
+        β₂   = 0.999
+        ε    = 1e-8
+
+    These defaults work well on a very wide range of problems without tuning.
+
+    WHY IS ADAM THE DEFAULT CHOICE?
+    --------------------------------
+    • Adaptive lr per parameter → no manual lr schedule needed.
+    • Momentum → stable convergence.
+    • Bias correction → correct early-step behaviour.
+    • Computationally cheap: O(parameters) memory and time.
+    """
+
+    def __init__(
+        self,
+        lr: float = 0.001,
+        beta1: float = 0.9,
+        beta2: float = 0.999,
+        epsilon: float = EPSILON,
+    ) -> None:
+        super().__init__(lr)
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.epsilon = epsilon
+
+    def update(self, layer_id: int, params: dict, grads: dict) -> dict:
+        if layer_id not in self._state:
+            self._state[layer_id] = {
+                "m": {key: np.zeros_like(params[key], dtype=DTYPE) for key in params},
+                "v": {key: np.zeros_like(params[key], dtype=DTYPE) for key in params},
+            }
+
+        # Bias-correction denominator uses the *current* step count
+        t = self._step + 1   # +1 because step() is called after update
+
+        updated = {}
+        for key in params:
+            if grads.get(key) is None:
+                updated[key] = params[key]
+                continue
