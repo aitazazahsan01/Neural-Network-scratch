@@ -53,3 +53,14 @@ def ensure_2d(x: np.ndarray) -> np.ndarray:
     A 1-D array of shape (n,) is reshaped to a column vector (n, 1).
     Arrays that are already ≥ 2-D are returned unchanged.
 
+    This prevents broadcasting surprises in matrix multiplications where
+    the difference between shape (n,) and shape (n, 1) matters.
+    """
+    x = to_array(x)
+    if x.ndim == 1:
+        x = x.reshape(-1, 1)
+    return x
+
+
+def ensure_column(x: np.ndarray) -> np.ndarray:
+    """Reshape a 1-D array to a column vector (n, 1); 2-D unchanged."""
