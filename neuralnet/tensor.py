@@ -31,3 +31,14 @@ EPSILON = 1e-8              # small constant used to avoid log(0) or /0
 # ---------------------------------------------------------------------------
 
 def to_array(x: object, dtype: type = DTYPE) -> np.ndarray:
+    """Convert *x* to a NumPy array with the library default dtype.
+
+    Parameters
+    ----------
+    x : array-like
+        Any object that ``np.array()`` can convert (list, tuple, np.ndarray …)
+    dtype : numpy dtype, optional
+        Target dtype. Defaults to float64.
+
+    Returns
+    -------
