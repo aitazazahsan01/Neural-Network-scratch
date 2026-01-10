@@ -75,3 +75,14 @@ def clip(x: np.ndarray, min_val: float = EPSILON, max_val: float = 1.0 - EPSILON
 
     Used to prevent log(0) inside loss functions.
     """
+    return np.clip(x, min_val, max_val)
+
+
+def batch_size(X: np.ndarray) -> int:
+    """Return the number of samples in *X* (first dimension)."""
+    return X.shape[0]
+
+
+def fan_in_fan_out(shape: tuple) -> tuple:
+    """Compute fan_in and fan_out from a weight matrix shape (n_in, n_out).
+
