@@ -42,3 +42,14 @@ def to_array(x: object, dtype: type = DTYPE) -> np.ndarray:
 
     Returns
     -------
+    np.ndarray
+    """
+    return np.array(x, dtype=dtype)
+
+
+def ensure_2d(x: np.ndarray) -> np.ndarray:
+    """Guarantee that *x* is at least 2-dimensional.
+
+    A 1-D array of shape (n,) is reshaped to a column vector (n, 1).
+    Arrays that are already ≥ 2-D are returned unchanged.
+
