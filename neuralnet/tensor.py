@@ -64,3 +64,14 @@ def ensure_2d(x: np.ndarray) -> np.ndarray:
 
 def ensure_column(x: np.ndarray) -> np.ndarray:
     """Reshape a 1-D array to a column vector (n, 1); 2-D unchanged."""
+    x = to_array(x)
+    if x.ndim == 1:
+        return x.reshape(-1, 1)
+    return x
+
+
+def clip(x: np.ndarray, min_val: float = EPSILON, max_val: float = 1.0 - EPSILON) -> np.ndarray:
+    """Element-wise clip to [min_val, max_val].
+
+    Used to prevent log(0) inside loss functions.
+    """
