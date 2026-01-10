@@ -19,3 +19,10 @@ The goal is complete transparency into how neural networks work.
 from .network      import Sequential
 from .layers       import DenseLayer, DropoutLayer
 from .activations  import (
+    Linear, ReLU, LeakyReLU, Sigmoid, Tanh, Softmax,
+    get_activation,
+)
+from .losses       import (
+    MSE, BinaryCrossEntropy, CategoricalCrossEntropy, SoftmaxCCE,
+    get_loss,
+)
