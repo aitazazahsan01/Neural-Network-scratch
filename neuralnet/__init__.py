@@ -12,3 +12,10 @@ Usage
 Design philosophy
 -----------------
 Every public class and function in this package is implemented from scratch
+using NumPy. No high-level ML frameworks are used internally.
+The goal is complete transparency into how neural networks work.
+"""
+
+from .network      import Sequential
+from .layers       import DenseLayer, DropoutLayer
+from .activations  import (
