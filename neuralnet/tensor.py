@@ -86,3 +86,10 @@ def batch_size(X: np.ndarray) -> int:
 def fan_in_fan_out(shape: tuple) -> tuple:
     """Compute fan_in and fan_out from a weight matrix shape (n_in, n_out).
 
+    These values drive variance-based weight initialisation (Xavier, He).
+
+    fan_in  = number of input connections to a single neuron
+    fan_out = number of output connections from a single neuron
+    """
+    assert len(shape) == 2, "Weight matrix must be 2-D (n_in, n_out)."
+    return shape[0], shape[1]
