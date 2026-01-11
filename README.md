@@ -162,3 +162,44 @@ graph LR
 ## Results
 
 ### ✅ Gradient Check — All 18 Parameters Verified
+
+Every gradient is verified against numerical finite differences before trusting the backprop implementation:
+
+| Loss + Activation | Relative Difference | Status |
+|---|---|---|
+| MSE + Tanh + Linear | `~5e-11` | ✅ PASS |
+| BCE + ReLU + Tanh + Sigmoid | `~4e-11` | ✅ PASS |
+| SoftmaxCCE + ReLU + Tanh + Linear | `~6e-11` | ✅ PASS |
+
+> Numerical gradient: `df/dθ ≈ [f(θ+ε) − f(θ−ε)] / 2ε` — accurate to machine precision.
+
+---
+
+### 🔁 XOR Problem — Proving Non-Linearity is Necessary
+
+XOR is not linearly separable. A single-layer model **mathematically cannot** solve it:
+
+| Model | Final Loss | Accuracy |
+|---|---|---|
+| Single layer (Linear) | 0.6931 | 50% ❌ (stuck at random chance) |
+| 2-layer (Hidden: Tanh) | **0.000050** | **100%** ✅ |
+
+---
+
+### 🔵 Binary Classification — 1,000 Synthetic Samples
+
+| Metric | Value |
+|---|---|
+| Architecture | `2 → Dense(16,ReLU) → Dropout(0.3) → Dense(8,ReLU) → Dense(1,Sigmoid)` |
+| Optimizer | Adam, lr=0.01 |
+| Val Accuracy | **96.5%** |
+| Val F1-Score | **0.965** |
+
+---
+
+### 🔢 MNIST Digit Recognition — 20,000 Samples
+
+| Metric | Value |
+|---|---|
+| Architecture | `784 → Dense(256) → Dropout → Dense(128) → Dropout → Dense(10)` |
+| Loss | SoftmaxCCE (fused, numerically stable) |
