@@ -39,3 +39,44 @@ Every input connects to every output neuron — hence "fully connected" or "dens
 
 ---
 
+## Backpropagation — The Chain Rule in Action
+
+![Backpropagation Flow](assets/backprop_flow.jpg)
+
+After the forward pass computes the loss `L`, gradients flow **backwards** through every layer using the chain rule:
+
+```
+dZ   = dA ⊙ f'(Z)          ← gradient through activation
+dW   = Aᵀ · dZ             ← gradient for weights   (Aᵀ is prev layer output)
+db   = Σ dZ                 ← gradient for biases
+dA_prev = dZ · Wᵀ          ← gradient to pass to layer below
+```
+
+> **Key insight:** `loss.gradient()` already returns the mean gradient (÷m), so the layer backward receives dZ pre-scaled — **no second division by m**.
+
+---
+
+## Project Structure
+
+```
+NN_Scratch/
+│
+├── 📦 neuralnet/                   ← Core library (NumPy only)
+│   ├── tensor.py                   ← dtype utilities (float64 everywhere)
+│   ├── initializers.py             ← Zero · Random · Xavier · He
+│   ├── activations.py              ← ReLU · LeakyReLU · Sigmoid · Tanh · Softmax
+│   ├── losses.py                   ← MSE · BCE · CCE · SoftmaxCCE (fused)
+│   ├── layers.py                   ← DenseLayer · DropoutLayer  ← THE HEART
+│   ├── optimizers.py               ← SGD → Momentum → RMSProp → Adam
+│   ├── network.py                  ← Sequential model (training loop)
+│   └── utils/
+│       ├── data_utils.py           ← split · batch · one-hot · normalise
+│       ├── metrics.py              ← accuracy · precision · recall · F1
+│       └── visualizer.py          ← loss curves · decision boundary · weight histograms
+│
+├── 📂 examples/
+│   ├── 01_xor_problem.py           ← Proves backprop works (non-linearity proof)
+│   ├── 02_binary_classification.py ← Overfitting demo + optimizer comparison
+│   ├── 03_mnist_digits.py          ← Real digit recognition, 97% accuracy
+│   └── gradient_check.py          ← Numerical gradient verification
+│
