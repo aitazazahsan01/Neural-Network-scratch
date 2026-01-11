@@ -98,3 +98,28 @@ class MiniBatchGenerator:
 
     def __iter__(self):
         m = self.X.shape[0]
+        idx = np.random.permutation(m) if self.shuffle else np.arange(m)
+        for start in range(0, m, self.batch_size):
+            end     = min(start + self.batch_size, m)
+            b_idx   = idx[start:end]
+            yield self.X[b_idx], self.y[b_idx]
+
+    def __len__(self) -> int:
+        return int(np.ceil(self.X.shape[0] / self.batch_size))
+
+
+# ---------------------------------------------------------------------------
+# One-Hot Encoding
+# ---------------------------------------------------------------------------
+
+def one_hot_encode(y: np.ndarray, n_classes: int | None = None) -> np.ndarray:
+    """Convert integer class labels to one-hot encoded matrix.
+
+    Parameters
+    ----------
+    y : np.ndarray of int, shape (m,)
+        Integer labels in range [0, n_classes-1].
+    n_classes : int or None
+        Number of classes. Inferred from max(y)+1 if None.
+
+    Returns
