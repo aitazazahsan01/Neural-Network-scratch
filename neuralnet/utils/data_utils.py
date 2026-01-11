@@ -123,3 +123,28 @@ def one_hot_encode(y: np.ndarray, n_classes: int | None = None) -> np.ndarray:
         Number of classes. Inferred from max(y)+1 if None.
 
     Returns
+    -------
+    Y : np.ndarray of float, shape (m, n_classes)
+        One-hot encoded labels. Row i has a 1 in column y[i].
+
+    Example
+    -------
+    >>> one_hot_encode(np.array([0, 2, 1]), n_classes=3)
+    array([[1., 0., 0.],
+           [0., 0., 1.],
+           [0., 1., 0.]])
+    """
+    y = y.astype(int).ravel()
+    if n_classes is None:
+        n_classes = int(y.max()) + 1
+    m = len(y)
+    Y = np.zeros((m, n_classes), dtype=DTYPE)
+    Y[np.arange(m), y] = 1.0
+    return Y
+
+
+# ---------------------------------------------------------------------------
+# Normalisation / Standardisation
+# ---------------------------------------------------------------------------
+
+def normalize(
