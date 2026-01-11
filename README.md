@@ -285,3 +285,44 @@ plot_history(history, title="My Model")
 | `random_normal` | `N(0, σ)` | Baseline / experiments |
 | `xavier_uniform` | `U(−√6/(fi+fo), +√6/(fi+fo))` | Sigmoid / Tanh |
 | `xavier_normal` | `N(0, √2/(fi+fo))` | Sigmoid / Tanh |
+| `he_normal` ⭐ | `N(0, √2/fan_in)` | **ReLU (default)** |
+| `he_uniform` | `U(−√6/fan_in, +√6/fan_in)` | ReLU variant |
+
+> Zeros fail because all neurons receive identical gradients → zero learning.
+> He init compensates for ReLU zeroing ~50% of neurons, keeping variance stable across layers.
+
+---
+
+## Theory Guide
+
+[`THEORY.md`](THEORY.md) is a standalone 26 KB mathematical companion covering:
+
+| Section | What You'll Learn |
+|---|---|
+| 1. From Biology to Math | Perceptron model, weights, bias |
+| 2. The Dense Layer | Matrix multiplication explained |
+| 3. Activation Functions | Why non-linearity matters |
+| 4. The Forward Pass | Chaining layers, caching |
+| 5. Loss Functions | MSE, BCE, CCE with derivations |
+| 6. Gradient Descent | Why it works (Taylor expansion proof) |
+| 7. Backpropagation | Full chain-rule derivation |
+| **8. Worked Example** | **Step-by-step numerical trace through XOR** |
+| 9. Initialisation | Variance analysis, Xavier vs He |
+| 10. Optimizers | SGD → Adam with bias-correction proof |
+| 11. Overfitting | Dropout, L2, early stopping |
+| 12. Learning Rate | What goes wrong at each extreme |
+| 13. Training Internals | What happens each epoch |
+| 14. Code ↔ Math Table | Every formula mapped to its exact line of code |
+
+---
+
+## Dependencies
+
+| Package | Role |
+|---|---|
+| `numpy` | All matrix math — the only ML dependency |
+| `matplotlib` | Plotting training curves and decision boundaries |
+| `scikit-learn` | **Data generation only** in examples (not used in the library itself) |
+
+---
+
