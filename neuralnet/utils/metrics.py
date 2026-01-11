@@ -62,3 +62,19 @@ def confusion_matrix_nn(
     else:
         pred_labels = (y_pred.ravel() >= 0.5).astype(int)
 
+    if y_true.ndim == 2 and y_true.shape[1] > 1:
+        true_labels = np.argmax(y_true, axis=1)
+    else:
+        true_labels = y_true.ravel().astype(int)
+
+    if n_classes is None:
+        n_classes = int(max(true_labels.max(), pred_labels.max())) + 1
+
+    C = np.zeros((n_classes, n_classes), dtype=int)
+    for t, p in zip(true_labels, pred_labels):
+        C[t, p] += 1
+    return C
+
+
+def classification_report_nn(
+    y_true: np.ndarray,
