@@ -48,3 +48,28 @@ def train_val_split(
 
     return (
         to_array(X[train_idx]),
+        to_array(X[val_idx]),
+        to_array(y[train_idx]),
+        to_array(y[val_idx]),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Mini-Batch Generator
+# ---------------------------------------------------------------------------
+
+class MiniBatchGenerator:
+    """Iterate over (X, y) in randomised mini-batches.
+
+    WHY MINI-BATCHES?
+    -----------------
+    • Full-batch GD: exact gradient but expensive for large datasets.
+    • Stochastic (1 sample): cheap but very noisy.
+    • Mini-batch: balances noise and efficiency.
+      The noise actually helps escape sharp local minima.
+
+    Parameters
+    ----------
+    X : np.ndarray
+    y : np.ndarray
+    batch_size : int
