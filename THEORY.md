@@ -682,3 +682,117 @@ the estimate to the correct scale early on.
 
 **Default hyperparameters** (Kingma & Ba, 2015):
 - η = 0.001
+- β₁ = 0.9
+- β₂ = 0.999
+- ε = 10⁻⁸
+
+These work well on an enormous variety of problems with no tuning.
+
+> **Code**: `neuralnet/optimizers.py`
+
+---
+
+## 11. Overfitting and Regularisation
+
+### What is Overfitting?
+
+Overfitting occurs when the model memorises the training data rather than
+learning generalisable patterns. Symptoms:
+
+```
+train_loss  ↓  (decreasing — good on training data)
+val_loss    ↑  (increasing — bad on unseen data)
+```
+
+The gap between train and validation performance is the **generalisation gap**.
+
+### Why Overfitting Happens
+
+A network with enough parameters can perfectly fit any training set
+(even random labels) by memorising the noise. The network uses its
+capacity to store specific training samples rather than abstract patterns.
+
+### Dropout (Srivastava et al., 2014)
+
+During training, randomly zero out a fraction `rate` of neurons:
+
+```
+mask   ~ Bernoulli(1 - rate)
+A_drop = A * mask / (1 - rate)   ← scale up to preserve expected value
+```
+
+During inference: no dropout (mask = 1 everywhere). The scaling ensures:
+
+```
+E[A_drop] = (1-rate) · (A/(1-rate)) = A    (same expected activation)
+```
+
+**Why does dropout help?**
+
+1. **Ensemble effect**: Each forward pass trains a different sub-network.
+   At test time, the full network acts like an ensemble of exponentially
+   many thinned networks.
+
+2. **Prevents co-adaptation**: No neuron can rely on the presence of any
+   specific other neuron → each neuron must learn useful features independently.
+
+3. **Forces redundancy**: Features are learned in multiple neurons, making
+   the representation more robust.
+
+### L2 Regularisation (Weight Decay)
+
+Add a penalty on large weights to the loss:
+
+```
+L_reg = L + (λ/2m) Σ W²
+dW_reg = dW + (λ/m) W
+```
+
+Large weights are penalised → weights are kept small → smoother, less
+complex decision boundaries → less overfitting.
+
+### Early Stopping
+
+Monitor validation loss during training. If it stops decreasing (or
+starts increasing), stop training — the model has started to overfit.
+
+> **Code**: `neuralnet/layers.py` `DropoutLayer`
+
+---
+
+## 12. The Learning Rate
+
+The learning rate η is arguably the most important hyperparameter.
+
+### Too High
+
+```
+W ← W - η · dW    (η = 10.0)
+```
+
+The step overshoots the minimum. The loss oscillates or diverges:
+
+```
+Loss: 0.5 → 1.2 → 3.8 → NaN  ← training explodes
+```
+
+### Too Low
+
+```
+W ← W - η · dW    (η = 0.000001)
+```
+
+Convergence is correct but takes an enormous number of epochs. May
+also get stuck in local minima or plateau regions.
+
+### Finding a Good Learning Rate
+
+1. **Trial and error**: Try [0.1, 0.01, 0.001, 0.0001] and see which converges.
+2. **Learning rate range test**: Start very low, gradually increase, observe loss.
+3. **Adaptive optimizers (Adam)**: Adapt lr per-parameter; less sensitive to η choice.
+
+### Learning Rate Schedules
+
+Many practitioners start with a higher lr and decay it over time:
+
+```
