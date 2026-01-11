@@ -1,45 +1,45 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-.Python
-*.egg-info/
-dist/
-build/
-*.egg
-
-# Virtual environments
-.venv/
-venv/
-env/
-ENV/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-.DS_Store
-
-# Jupyter
-.ipynb_checkpoints/
-
-# Test artifacts
-examples/_verify_*.py
-examples/xor_loss_comparison.png
-examples/xor_boundary.png
-examples/binary_history.png
-examples/binary_boundary.png
-examples/overfitting_comparison.png
-examples/optimizer_comparison.png
-examples/mnist_confusion.png
-examples/mnist_history.png
-examples/mnist_predictions.png
-examples/mnist_weights.png
-
-# scikit-learn dataset cache
-~/scikit_learn_data/
-
-# OS
-Thumbs.db
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Test artifacts
+examples/_verify_*.py
+examples/xor_loss_comparison.png
+examples/xor_boundary.png
+examples/binary_history.png
+examples/binary_boundary.png
+examples/overfitting_comparison.png
+examples/optimizer_comparison.png
+examples/mnist_confusion.png
+examples/mnist_history.png
+examples/mnist_predictions.png
+examples/mnist_weights.png
+
+# scikit-learn dataset cache
+~/scikit_learn_data/
+
+# OS
+Thumbs.db
