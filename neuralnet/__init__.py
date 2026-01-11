@@ -33,3 +33,10 @@ from .optimizers   import (
 from .initializers import (
     ZeroInit, RandomNormal, XavierUniform, XavierNormal, HeNormal, HeUniform,
     get_initializer,
+)
+from . import utils
+
+__version__ = "1.0.0"
+__all__ = [
+    # Model
+    "Sequential",
