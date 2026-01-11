@@ -110,3 +110,19 @@ def classification_report_nn(
         tp = C[k, k]
         fp = C[:, k].sum() - tp
         fn = C[k, :].sum() - tp
+
+        precision = tp / (tp + fp + 1e-8)
+        recall    = tp / (tp + fn + 1e-8)
+        f1        = 2 * precision * recall / (precision + recall + 1e-8)
+        support   = C[k, :].sum()
+
+        print(
+            f"{class_names[k]:<12} "
+            f"{precision:>10.4f} "
+            f"{recall:>10.4f} "
+            f"{f1:>10.4f} "
+            f"{support:>10}"
+        )
+
+    acc = C.diagonal().sum() / C.sum()
+    print("-" * 54)
