@@ -244,3 +244,44 @@ python -m examples.03_mnist_digits          # ~5 minutes (downloads MNIST once)
 ---
 
 ## Usage
+
+```python
+from neuralnet import Sequential, DenseLayer, DropoutLayer
+from neuralnet.utils.data_utils import train_val_split, standardize, one_hot_encode
+from neuralnet.utils.visualizer import plot_history
+
+# Build
+model = Sequential([
+    DenseLayer(256, activation="relu"),
+    DropoutLayer(rate=0.3),
+    DenseLayer(128, activation="relu"),
+    DenseLayer(10,  activation="linear"),  # + SoftmaxCCE
+])
+
+# Compile
+model.compile(loss="softmax_cce", optimizer="adam", learning_rate=0.001)
+model.summary(input_shape=(784,))  # shows param counts
+
+# Train
+history = model.fit(
+    X_train, Y_train,
+    epochs=20,
+    batch_size=128,
+    validation_data=(X_val, Y_val),
+)
+
+# Evaluate
+model.evaluate(X_val, Y_val)
+plot_history(history, title="My Model")
+```
+
+---
+
+## Weight Initialisation
+
+| Strategy | Formula | Best For |
+|---|---|---|
+| `zeros` | `0` | Biases only — **never weights** |
+| `random_normal` | `N(0, σ)` | Baseline / experiments |
+| `xavier_uniform` | `U(−√6/(fi+fo), +√6/(fi+fo))` | Sigmoid / Tanh |
+| `xavier_normal` | `N(0, √2/(fi+fo))` | Sigmoid / Tanh |
