@@ -226,3 +226,117 @@ m samples:
 ```
 L = (1/m) Σᵢ ℓ(yᵢ, ŷᵢ)
 ```
+
+The entire learning process is: **minimise L** with respect to all W and b.
+
+### Mean Squared Error (Regression)
+
+```
+L = (1/2m) Σᵢ (yᵢ - ŷᵢ)²
+
+dL/dŷ = (ŷ - y) / m
+```
+
+The factor 1/2 makes the derivative clean (the 2 from the power cancels).
+
+### Binary Cross-Entropy (Binary Classification)
+
+```
+L = -(1/m) Σᵢ [yᵢ log(ŷᵢ) + (1-yᵢ) log(1-ŷᵢ)]
+
+dL/dŷ = (1/m) [-(y/ŷ) + (1-y)/(1-ŷ)]
+```
+
+**Intuition**: If the true label is 1 and we predict ŷ=0.01, the loss is
+`-log(0.01) ≈ 4.6` — very large. If we predict ŷ=0.99, the loss is
+`-log(0.99) ≈ 0.01` — tiny. The loss penalises confident wrong answers harshly.
+
+**Why not MSE for classification?** With sigmoid output, MSE creates a
+loss landscape with many flat regions (because σ'(z)≈0 saturates the
+gradient). Cross-entropy combined with sigmoid produces a perfectly clean
+gradient: `dL/dz = (ŷ - y)/m`, which never vanishes.
+
+### Categorical Cross-Entropy (Multi-Class)
+
+```
+L = -(1/m) Σᵢ Σₖ yᵢₖ log(ŷᵢₖ)
+  = -(1/m) Σᵢ log(ŷᵢ,true_class)    (since y is one-hot)
+
+dL/dŷ = -(1/m) y / ŷ    (element-wise division)
+```
+
+### The Softmax + CCE Miracle
+
+When Softmax output feeds into CCE, the combined gradient simplifies
+beautifully. The full derivation:
+
+Let `a_k = softmax(z)_k`. CCE loss for one sample: `L = -Σₖ yₖ log(aₖ)`.
+
+```
+dL/dzⱼ = Σₖ (dL/daₖ) · (daₖ/dzⱼ)
+
+dL/daₖ = -yₖ/aₖ
+
+daₖ/dzⱼ = aₖ(δₖⱼ - aⱼ)     (Softmax Jacobian)
+
+dL/dzⱼ = Σₖ (-yₖ/aₖ) · aₖ(δₖⱼ - aⱼ)
+        = Σₖ -yₖ(δₖⱼ - aⱼ)
+        = -yⱼ + aⱼ Σₖ yₖ
+        = aⱼ - yⱼ         (since Σₖ yₖ = 1 for one-hot)
+```
+
+**Final result**:
+```
+dL/dZ = (A - Y) / m
+```
+
+This is remarkably clean: the gradient is simply the difference between the
+predicted probability and the one-hot true label. No Jacobian computation
+needed. This is why we fuse them in `SoftmaxCCE`.
+
+---
+
+## 6. Gradient Descent
+
+### The Optimisation Problem
+
+We want to find W* that minimises L:
+
+```
+W* = argmin_W L(W)
+```
+
+L is a function of potentially millions of parameters — we cannot find the
+minimum analytically. Instead, we use iterative gradient descent.
+
+### Intuition: Walking Downhill
+
+Imagine the loss surface as a hilly landscape. You're standing at some point
+(your current W). The gradient ∇L tells you which direction is "uphill".
+To descend, you step in the *opposite* direction:
+
+```
+W ← W - η · ∇_W L
+```
+
+where η (eta) is the **learning rate** — the step size.
+
+### Why Gradient Descent Works
+
+The first-order Taylor expansion of L around W:
+
+```
+L(W + δ) ≈ L(W) + ∇L · δ
+```
+
+If we choose `δ = -η · ∇L` (gradient descent direction):
+
+```
+L(W + δ) ≈ L(W) - η · ||∇L||²
+```
+
+Since `η > 0` and `||∇L||² ≥ 0`, the loss *decreases* (or stays the same).
+Gradient descent is guaranteed to reduce loss on each step (for small enough η).
+
+### Stochastic vs. Mini-Batch vs. Full-Batch
+
