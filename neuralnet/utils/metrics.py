@@ -78,3 +78,19 @@ def confusion_matrix_nn(
 
 def classification_report_nn(
     y_true: np.ndarray,
+    y_pred: np.ndarray,
+    class_names: list | None = None,
+) -> None:
+    """Print a classification report with precision, recall, and F1-score.
+
+    METRIC DEFINITIONS
+    ------------------
+    Precision  = TP / (TP + FP)
+        Of all samples predicted as class k, how many actually are class k?
+
+    Recall     = TP / (TP + FN)
+        Of all samples that are class k, how many did the model find?
+
+    F1-score   = 2 · Precision · Recall / (Precision + Recall)
+        Harmonic mean of precision and recall.
+        High F1 requires *both* precision and recall to be high.
