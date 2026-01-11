@@ -910,3 +910,10 @@ as the network fine-tunes. Eventually:
 | Xavier init | `N(0, √(2/(n_in+n_out)))` | [`initializers.py`](neuralnet/initializers.py) `XavierNormal.__call__()` |
 | Dropout | `A · mask / (1-rate)` | [`layers.py`](neuralnet/layers.py) `DropoutLayer.forward()` |
 | One-hot encoding | `Y[i, y[i]] = 1` | [`utils/data_utils.py`](neuralnet/utils/data_utils.py) `one_hot_encode()` |
+| Feature standardisation | `(X - μ) / σ` | [`utils/data_utils.py`](neuralnet/utils/data_utils.py) `standardize()` |
+
+---
+
+*This document covers the complete mathematical and algorithmic foundation
+of feedforward neural networks. Every concept here is directly implemented
+in the accompanying source code — read them together for maximum understanding.*
