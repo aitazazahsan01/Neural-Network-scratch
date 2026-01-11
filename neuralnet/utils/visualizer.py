@@ -79,3 +79,30 @@ def plot_history(
 
     if save_path:
         plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        print(f"Saved: {save_path}")
+
+    plt.show()
+
+
+# ---------------------------------------------------------------------------
+# Decision boundary (2-D input only)
+# ---------------------------------------------------------------------------
+
+def plot_decision_boundary(
+    model,
+    X: np.ndarray,
+    y: np.ndarray,
+    title: str = "Decision Boundary",
+    resolution: int = 300,
+    save_path: str | None = None,
+) -> None:
+    """Plot a colour-coded decision boundary for a 2-D input space.
+
+    Parameters
+    ----------
+    model : Sequential (or any object with a .predict(X) method)
+    X : np.ndarray, shape (m, 2)   — must be 2-D features
+    y : np.ndarray, shape (m,) or (m, 1)   — class labels (int or 0/1)
+    title : str
+    resolution : int
+        Grid resolution. Higher = smoother boundary but slower.
