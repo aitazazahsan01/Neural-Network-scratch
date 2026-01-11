@@ -80,3 +80,44 @@ NN_Scratch/
 │   ├── 03_mnist_digits.py          ← Real digit recognition, 97% accuracy
 │   └── gradient_check.py          ← Numerical gradient verification
 │
+├── 📖 THEORY.md                    ← 14-section mathematical guide
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## Training Pipeline
+
+```mermaid
+flowchart TD
+    A([Raw Data]) --> B[Preprocess\nStandardise · One-Hot · Split]
+    B --> C[Build Model\nSequential + DenseLayer + Dropout]
+    C --> D[Compile\nLoss + Optimizer]
+    D --> E{Training Loop}
+
+    E --> F[Shuffle Data]
+    F --> G[Mini-Batch]
+    G --> H[Forward Pass\nZ=XW+b, A=f Z]
+    H --> I[Compute Loss\nL = loss y, ŷ]
+    I --> J[Backward Pass\ndW, db via chain rule]
+    J --> K[Optimizer Step\nW ← W - η·update]
+    K --> L{More batches?}
+    L -- Yes --> G
+    L -- No --> M[Epoch Metrics\ntrain_loss, val_loss, acc]
+    M --> N{More epochs?}
+    N -- Yes --> F
+    N -- No --> O([Trained Model])
+
+    style A fill:#238636,color:#fff
+    style O fill:#238636,color:#fff
+    style I fill:#da3633,color:#fff
+    style J fill:#8957e5,color:#fff
+    style K fill:#1f6feb,color:#fff
+```
+
+---
+
+## Optimizers — A Progressive Story
+
+```mermaid
