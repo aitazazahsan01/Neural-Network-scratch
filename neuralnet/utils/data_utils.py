@@ -198,3 +198,4 @@ def standardize(
     mean = ref.mean(axis=0)
     std  = ref.std(axis=0)
     std  = np.where(std == 0, 1.0, std)   # avoid /0 for constant features
+    return ((X - mean) / std).astype(DTYPE), mean, std
