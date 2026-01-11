@@ -106,3 +106,30 @@ def plot_decision_boundary(
     title : str
     resolution : int
         Grid resolution. Higher = smoother boundary but slower.
+    save_path : str, optional
+    """
+    assert X.shape[1] == 2, "plot_decision_boundary requires exactly 2 features."
+
+    x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
+    y_min, y_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5
+
+    xx, yy = np.meshgrid(
+        np.linspace(x_min, x_max, resolution),
+        np.linspace(y_min, y_max, resolution),
+    )
+    grid  = np.c_[xx.ravel(), yy.ravel()]
+    probs = model.predict(grid)
+
+    # Determine the predicted class label for colouring
+    if probs.shape[1] > 1:
+        Z = np.argmax(probs, axis=1)
+    else:
+        Z = (probs.ravel() >= 0.5).astype(int)
+
+    Z = Z.reshape(xx.shape)
+
+    # True labels
+    if y.ndim == 2 and y.shape[1] > 1:
+        y_labels = np.argmax(y, axis=1)
+    else:
+        y_labels = y.ravel().astype(int)
