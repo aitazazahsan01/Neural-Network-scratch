@@ -112,3 +112,117 @@ for i in range(m):
 ```
 
 Matrix multiplication does this in one call: `Z = X @ W + b`.
+NumPy (and GPU libraries) are heavily optimised for exactly this operation.
+
+---
+
+## 3. Activation Functions
+
+### Why Non-Linearity is Essential
+
+Consider two linear layers stacked:
+
+```
+A₁ = X W₁ + b₁
+A₂ = A₁ W₂ + b₂
+   = (X W₁ + b₁) W₂ + b₂
+   = X (W₁W₂) + (b₁W₂ + b₂)
+   = X W_combined + b_combined
+```
+
+**No matter how many linear layers you stack, the result is always a single
+linear transformation.** Non-linear activations break this collapse.
+
+### ReLU — Rectified Linear Unit
+
+```
+f(z) = max(0, z)
+
+f'(z) = 1   if z > 0
+         0   if z ≤ 0
+```
+
+**Derivative**: A simple step function. For positive inputs, gradient flows
+freely (f'=1). For negative inputs, gradient is zero — the neuron is
+temporarily "off". This creates *sparsity*: on any given input, typically
+only ~50% of neurons are active.
+
+**The Dying ReLU problem**: If a neuron's weight update pushes all its inputs
+into the negative regime permanently, f'(z)=0 forever — the neuron is "dead"
+and contributes nothing. Solution: He initialisation, careful learning rate,
+or LeakyReLU.
+
+### Sigmoid
+
+```
+f(z) = 1 / (1 + e^{-z})
+
+f'(z) = f(z) · (1 - f(z))
+```
+
+Maps ℝ → (0, 1). The output is interpretable as a *probability*.
+
+**Saturation problem**: For |z| >> 0, f'(z) ≈ 0. Gradients vanish when
+backpropagating through many sigmoid layers. This is why deep networks
+rarely use sigmoid in hidden layers.
+
+### Softmax
+
+```
+f(z)_k = exp(z_k) / Σⱼ exp(z_j)    for k = 1..K
+```
+
+Converts K real numbers into a probability distribution:
+- All outputs ∈ (0, 1)
+- All outputs sum to 1
+
+**Numerical stability**: Subtract `max(z)` before computing exponentials:
+
+```
+f(z)_k = exp(z_k - max(z)) / Σⱼ exp(z_j - max(z))
+```
+
+This is identical mathematically (the constant cancels) but prevents overflow.
+
+---
+
+## 4. The Forward Pass
+
+The forward pass evaluates the network left-to-right for a given input X.
+
+```
+A₀ = X                      (input, no transformation)
+
+Z₁ = A₀ @ W₁ + b₁          (linear)
+A₁ = f₁(Z₁)                (activation)
+
+Z₂ = A₁ @ W₂ + b₂
+A₂ = f₂(Z₂)
+
+...
+
+Zₗ = Aₗ₋₁ @ Wₗ + bₗ
+Aₗ = fₗ(Zₗ)                 (final output = ŷ)
+
+L = loss(y, ŷ)
+```
+
+**Caching**: During the forward pass, each layer stores `(A_prev, Z)` in a
+cache. This is necessary because the backward pass needs them to compute
+gradients. Storing them avoids recomputing the entire forward pass during backprop.
+
+> **Code**: `neuralnet/layers.py` `DenseLayer.forward()` — the line
+> `self._cache = {"A_prev": A_prev, "Z": Z}` stores the cache.
+
+---
+
+## 5. Loss Functions
+
+### What is a Loss Function?
+
+The loss `L(y, ŷ)` is a scalar measuring prediction error. We average over
+m samples:
+
+```
+L = (1/m) Σᵢ ℓ(yᵢ, ŷᵢ)
+```
