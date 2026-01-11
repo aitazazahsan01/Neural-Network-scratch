@@ -454,3 +454,117 @@ b1 = [[0.0, 0.0]]      shape (1, 2)
 
 W2 = [[ 0.9],
       [-0.7]]           shape (2, 1)
+
+b2 = [[0.0]]            shape (1, 1)
+```
+
+### One Sample: x = [1, 0], y = 1
+
+**FORWARD PASS**
+
+```
+Layer 1:
+  Z1 = x @ W1 + b1
+     = [1, 0] @ [[ 0.5, -0.3], [-0.2, 0.8]] + [0, 0]
+     = [0.5, -0.3]
+
+  A1 = tanh(Z1) = [tanh(0.5), tanh(-0.3)]
+               ≈ [0.462,  -0.291]
+
+Layer 2:
+  Z2 = A1 @ W2 + b2
+     = [0.462, -0.291] @ [[0.9], [-0.7]] + [0]
+     = [0.462·0.9 + (-0.291)·(-0.7)]
+     = [0.416 + 0.204] = [0.620]
+
+  A2 = sigmoid(0.620)
+     = 1/(1+e^{-0.620})
+     ≈ 0.650
+
+ŷ = 0.650    (predicted probability of class 1)
+y  = 1       (true label)
+```
+
+**LOSS**
+
+```
+L = -[y log(ŷ) + (1-y) log(1-ŷ)]
+  = -[1·log(0.650) + 0·log(0.350)]
+  = -log(0.650)
+  ≈ 0.431
+```
+
+**BACKWARD PASS**
+
+Starting gradient from loss:
+```
+dL/dŷ = dL/dA2 = -(y/ŷ) + (1-y)/(1-ŷ)    (at m=1)
+       = -(1/0.650) + 0
+       = -1.538
+```
+
+Layer 2 backward:
+
+```
+dZ2 = dA2 * sigmoid'(Z2)
+    = dA2 * A2·(1-A2)
+    = -1.538 · 0.650 · 0.350
+    = -1.538 · 0.228
+    ≈ -0.350
+
+dW2 = A1ᵀ @ dZ2 / m
+    = [[0.462], [-0.291]] @ [[-0.350]]
+    = [[-0.162], [0.102]]
+
+db2 = mean(dZ2) = -0.350
+
+dA1 = dZ2 @ W2ᵀ = [[-0.350]] @ [[0.9, -0.7]]
+    = [[-0.315, 0.245]]
+```
+
+Layer 1 backward:
+
+```
+dZ1 = dA1 * tanh'(Z1)
+    = dA1 * (1 - A1²)
+    = [-0.315, 0.245] * [1 - 0.462², 1 - (-0.291)²]
+    = [-0.315, 0.245] * [0.787, 0.915]
+    = [-0.248, 0.224]
+
+dW1 = X.T @ dZ1 / m
+    = [[1], [0]] @ [[-0.248, 0.224]]
+    = [[-0.248, 0.224],
+       [  0.0,    0.0]]
+
+db1 = [-0.248, 0.224]
+
+dA0 = dZ1 @ W1ᵀ  (not used — X is input, not trained)
+```
+
+**OPTIMIZER UPDATE** (SGD, lr=0.1)
+
+```
+W2 ← W2 - 0.1 · dW2
+    = [[0.9], [-0.7]] - 0.1·[[-0.162], [0.102]]
+    = [[0.9 + 0.016], [-0.7 - 0.010]]
+    = [[0.916], [-0.710]]
+
+W1 ← W1 - 0.1 · dW1
+    = [[ 0.5 + 0.025, -0.3 - 0.022],
+       [-0.2 + 0.000,  0.8 - 0.000]]
+    = [[ 0.525, -0.322],
+       [-0.200,  0.800]]
+```
+
+After this one update, `W2[0]` increased slightly (because Z2 was 0.620,
+increasing W2[0] will increase the output towards 1.0, which is the
+correct label). The network is nudging itself in the right direction!
+
+---
+
+## 9. Weight Initialisation
+
+### Why Zeros Fail
+
+If all weights are zero, every neuron computes the same output.
+Every neuron receives the same gradient. Every neuron updates identically.
