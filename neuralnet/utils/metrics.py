@@ -46,3 +46,19 @@ def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
 
 def confusion_matrix_nn(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    n_classes: int | None = None,
+) -> np.ndarray:
+    """Compute confusion matrix.
+
+    Returns
+    -------
+    C : np.ndarray, shape (n_classes, n_classes)
+        C[i, j] = number of samples with true class i predicted as class j.
+    """
+    if y_pred.ndim == 2 and y_pred.shape[1] > 1:
+        pred_labels = np.argmax(y_pred, axis=1)
+    else:
+        pred_labels = (y_pred.ravel() >= 0.5).astype(int)
+
