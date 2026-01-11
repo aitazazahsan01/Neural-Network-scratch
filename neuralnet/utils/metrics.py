@@ -94,3 +94,19 @@ def classification_report_nn(
     F1-score   = 2 · Precision · Recall / (Precision + Recall)
         Harmonic mean of precision and recall.
         High F1 requires *both* precision and recall to be high.
+
+    Support    = TP + FN = actual number of class-k samples.
+    """
+    C = confusion_matrix_nn(y_true, y_pred)
+    n_classes = C.shape[0]
+
+    if class_names is None:
+        class_names = [str(k) for k in range(n_classes)]
+
+    print(f"\n{'Class':<12} {'Precision':>10} {'Recall':>10} {'F1-Score':>10} {'Support':>10}")
+    print("-" * 54)
+
+    for k in range(n_classes):
+        tp = C[k, k]
+        fp = C[:, k].sum() - tp
+        fn = C[k, :].sum() - tp
