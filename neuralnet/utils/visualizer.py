@@ -160,3 +160,30 @@ def plot_decision_boundary(
     plt.tight_layout()
 
     if save_path:
+        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        print(f"Saved: {save_path}")
+
+    plt.show()
+
+
+# ---------------------------------------------------------------------------
+# Weight histograms
+# ---------------------------------------------------------------------------
+
+def plot_weight_histograms(
+    model,
+    title: str = "Weight Distributions",
+    save_path: str | None = None,
+) -> None:
+    """Plot histograms of weight values for each Dense layer.
+
+    Useful for diagnosing:
+        • Exploding weights  → very wide distribution
+        • Dead weights       → distribution collapsed near zero
+        • Healthy weights    → approximately Gaussian, moderate spread
+    """
+    from ..layers import DenseLayer
+
+    dense_layers = [
+        (i, l) for i, l in enumerate(model.layers)
+        if isinstance(l, DenseLayer) and l._built
