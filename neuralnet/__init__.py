@@ -54,3 +54,7 @@ __all__ = [
     # Initialisers
     "ZeroInit", "RandomNormal", "XavierUniform", "XavierNormal",
     "HeNormal", "HeUniform",
+    "get_initializer",
+    # Utils
+    "utils",
+]
