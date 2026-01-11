@@ -133,3 +133,30 @@ def plot_decision_boundary(
         y_labels = np.argmax(y, axis=1)
     else:
         y_labels = y.ravel().astype(int)
+
+    n_classes = len(np.unique(y_labels))
+    cmap_bg   = plt.cm.get_cmap("RdYlBu", n_classes)
+    cmap_pts  = plt.cm.get_cmap("tab10", n_classes)
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.contourf(xx, yy, Z, alpha=0.4, cmap=cmap_bg)
+    ax.contour(xx, yy, Z, colors="k", linewidths=0.5, alpha=0.5)
+
+    for k in range(n_classes):
+        mask = y_labels == k
+        ax.scatter(
+            X[mask, 0], X[mask, 1],
+            s=30, label=f"Class {k}",
+            edgecolors="k", linewidths=0.4,
+            color=cmap_pts(k),
+        )
+
+    ax.set_xlabel("Feature 1")
+    ax.set_ylabel("Feature 2")
+    ax.set_title(title, fontsize=13, fontweight="bold")
+    ax.legend()
+    ax.grid(True, alpha=0.2)
+
+    plt.tight_layout()
+
+    if save_path:
