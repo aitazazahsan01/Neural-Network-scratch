@@ -40,3 +40,10 @@ __version__ = "1.0.0"
 __all__ = [
     # Model
     "Sequential",
+    # Layers
+    "DenseLayer", "DropoutLayer",
+    # Activations
+    "Linear", "ReLU", "LeakyReLU", "Sigmoid", "Tanh", "Softmax",
+    "get_activation",
+    # Losses
+    "MSE", "BinaryCrossEntropy", "CategoricalCrossEntropy", "SoftmaxCCE",
