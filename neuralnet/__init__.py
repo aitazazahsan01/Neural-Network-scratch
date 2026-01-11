@@ -47,3 +47,10 @@ __all__ = [
     "get_activation",
     # Losses
     "MSE", "BinaryCrossEntropy", "CategoricalCrossEntropy", "SoftmaxCCE",
+    "get_loss",
+    # Optimizers
+    "SGD", "SGDMomentum", "RMSProp", "Adam",
+    "get_optimizer",
+    # Initialisers
+    "ZeroInit", "RandomNormal", "XavierUniform", "XavierNormal",
+    "HeNormal", "HeUniform",
