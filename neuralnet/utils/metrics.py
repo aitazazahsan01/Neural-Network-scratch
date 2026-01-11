@@ -126,3 +126,5 @@ def classification_report_nn(
 
     acc = C.diagonal().sum() / C.sum()
     print("-" * 54)
+    print(f"{'Overall Accuracy':<12} {acc:>10.4f}")
+    print()
