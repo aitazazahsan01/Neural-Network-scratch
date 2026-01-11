@@ -203,3 +203,44 @@ XOR is not linearly separable. A single-layer model **mathematically cannot** so
 |---|---|
 | Architecture | `784 → Dense(256) → Dropout → Dense(128) → Dropout → Dense(10)` |
 | Loss | SoftmaxCCE (fused, numerically stable) |
+| Optimizer | Adam, lr=0.001 |
+| Epochs | 20 |
+| **Val Accuracy** | **97.03%** 🎯 |
+
+Per-class breakdown:
+
+| Digit | Precision | Recall | F1 |
+|:---:|:---:|:---:|:---:|
+| 0 | 0.969 | 0.990 | **0.980** |
+| 1 | 0.981 | 0.978 | **0.979** |
+| 2 | 0.970 | 0.960 | 0.965 |
+| 3 | 0.972 | 0.958 | 0.965 |
+| 4 | 0.954 | 0.975 | 0.964 |
+| 5 | 0.960 | 0.960 | 0.960 |
+| 6 | 0.980 | 0.987 | **0.984** |
+| 7 | 0.977 | 0.986 | **0.981** |
+| 8 | 0.973 | 0.951 | 0.962 |
+| 9 | 0.964 | 0.954 | 0.959 |
+
+---
+
+## Quick Start
+
+```bash
+# Clone and install
+git clone https://github.com/YOUR_USERNAME/NN_Scratch.git
+cd NN_Scratch
+pip install -r requirements.txt
+
+# Verify gradients first (optional but educational)
+python -m examples.gradient_check
+
+# Run examples in order
+python -m examples.01_xor_problem          # ~2 seconds
+python -m examples.02_binary_classification # ~30 seconds
+python -m examples.03_mnist_digits          # ~5 minutes (downloads MNIST once)
+```
+
+---
+
+## Usage
