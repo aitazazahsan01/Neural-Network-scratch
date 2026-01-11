@@ -73,3 +73,28 @@ class MiniBatchGenerator:
     X : np.ndarray
     y : np.ndarray
     batch_size : int
+        Samples per mini-batch.
+    shuffle : bool
+        Shuffle data at the start of each epoch.
+
+    Usage
+    -----
+    >>> gen = MiniBatchGenerator(X_train, y_train, batch_size=32)
+    >>> for X_batch, y_batch in gen:
+    ...     ...
+    """
+
+    def __init__(
+        self,
+        X: np.ndarray,
+        y: np.ndarray,
+        batch_size: int = 32,
+        shuffle: bool = True,
+    ) -> None:
+        self.X = to_array(X)
+        self.y = to_array(y)
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+
+    def __iter__(self):
+        m = self.X.shape[0]
