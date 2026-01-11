@@ -148,3 +148,28 @@ def one_hot_encode(y: np.ndarray, n_classes: int | None = None) -> np.ndarray:
 # ---------------------------------------------------------------------------
 
 def normalize(
+    X: np.ndarray,
+    X_ref: np.ndarray | None = None,
+) -> tuple:
+    """Min-max scale *X* to [0, 1] column-wise.
+
+    Parameters
+    ----------
+    X : np.ndarray, shape (m, n)
+    X_ref : np.ndarray, optional
+        Reference array to compute statistics from (e.g. training set).
+        If None, statistics are computed from X itself.
+
+    Returns
+    -------
+    (X_scaled, x_min, x_max)
+    """
+    ref = X if X_ref is None else X_ref
+    x_min = ref.min(axis=0)
+    x_max = ref.max(axis=0)
+    denom = np.where(x_max - x_min == 0, 1.0, x_max - x_min)  # avoid /0
+    return ((X - x_min) / denom).astype(DTYPE), x_min, x_max
+
+
+def standardize(
+    X: np.ndarray,
