@@ -173,3 +173,28 @@ def normalize(
 
 def standardize(
     X: np.ndarray,
+    X_ref: np.ndarray | None = None,
+) -> tuple:
+    """Z-score standardise *X* to zero mean and unit variance column-wise.
+
+    WHY STANDARDISE?
+    ----------------
+    If features have very different scales (e.g. age in [0,100] vs
+    salary in [10000,200000]), gradient updates will be dominated by
+    the large-scale features. Standardisation puts all features on the
+    same scale, making training much more stable and faster.
+
+    Parameters
+    ----------
+    X : np.ndarray, shape (m, n)
+    X_ref : np.ndarray, optional
+        Reference array for statistics.
+
+    Returns
+    -------
+    (X_scaled, mean, std)
+    """
+    ref  = X if X_ref is None else X_ref
+    mean = ref.mean(axis=0)
+    std  = ref.std(axis=0)
+    std  = np.where(std == 0, 1.0, std)   # avoid /0 for constant features
