@@ -26,3 +26,10 @@ from .losses       import (
     MSE, BinaryCrossEntropy, CategoricalCrossEntropy, SoftmaxCCE,
     get_loss,
 )
+from .optimizers   import (
+    SGD, SGDMomentum, RMSProp, Adam,
+    get_optimizer,
+)
+from .initializers import (
+    ZeroInit, RandomNormal, XavierUniform, XavierNormal, HeNormal, HeUniform,
+    get_initializer,
