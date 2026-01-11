@@ -568,3 +568,117 @@ correct label). The network is nudging itself in the right direction!
 
 If all weights are zero, every neuron computes the same output.
 Every neuron receives the same gradient. Every neuron updates identically.
+All neurons remain symmetric forever — the network has effectively only
+one unique neuron regardless of stated width. This is the
+**symmetry breaking problem**.
+
+### Variance Analysis (Xavier Initialisation)
+
+Assume inputs `x_i` are i.i.d. with mean 0, variance `σ²_x`.
+One neuron computes:
+
+```
+z = Σᵢ wᵢ xᵢ
+```
+
+Variance of z (assuming w and x are independent):
+
+```
+Var(z) = Σᵢ Var(wᵢ) · Var(xᵢ) = n_in · Var(w) · σ²_x
+```
+
+To keep `Var(z) = Var(x)` (preserve variance through the layer):
+
+```
+Var(w) = 1/n_in         ← "LeCun" initialisation
+```
+
+Glorot & Bengio (2010) improved this by also considering fan_out:
+
+```
+Var(w) = 2 / (n_in + n_out)   ← Xavier / Glorot
+```
+
+### He Initialisation (for ReLU)
+
+ReLU discards ~50% of neurons on any given input (sets to 0).
+This halves the variance. To compensate:
+
+```
+Var(w) = 2 / n_in              ← He / Kaiming
+```
+
+### Practical Impact
+
+| Init | Sigmoid/Tanh layers | ReLU layers |
+|------|--------------------|-----------:|
+| Zeros | Fails (no symmetry breaking) | Fails |
+| Random N(0, 1) | Gradients explode/vanish | Same |
+| Xavier Normal | ✅ Good | Moderate |
+| He Normal | Acceptable | ✅ Best |
+
+> **Code**: `neuralnet/initializers.py`
+
+---
+
+## 10. Optimizers
+
+All optimizers are gradient descent variants — they all use `dL/dW` to
+update W, but they differ in *how* they use it.
+
+### SGD
+
+```
+W ← W - η · dW
+```
+
+Simple and transparent. Works, but:
+- Same lr for all parameters regardless of their gradient history.
+- Noisy gradients from mini-batches cause oscillations.
+
+### SGD + Momentum
+
+```
+v ← β·v + (1-β)·dW
+W ← W - η·v
+```
+
+The velocity `v` is a running average of past gradients. In directions
+with consistent gradients, v builds up (faster convergence). In directions
+with oscillating gradients, v averages out (smoother trajectory).
+
+Default β=0.9 means: current gradient gets weight 0.1, accumulated history
+gets weight 0.9.
+
+### RMSProp
+
+```
+s ← β·s + (1-β)·dW²
+W ← W - η · dW / √(s + ε)
+```
+
+Dividing by `√s` reduces the effective lr when gradient magnitudes are
+large. Parameters with consistently large gradients (steep dimensions)
+get smaller updates; flat dimensions get larger updates.
+
+Intuition: the ball adjusts its step size based on the terrain steepness.
+
+### Adam (Adaptive Moment Estimation)
+
+```
+m ← β₁·m + (1-β₁)·dW          (momentum)
+v ← β₂·v + (1-β₂)·dW²         (RMSProp)
+
+m̂ = m / (1-β₁ᵗ)               (bias correction)
+v̂ = v / (1-β₂ᵗ)               (bias correction)
+
+W ← W - η · m̂ / (√v̂ + ε)
+```
+
+Adam = Momentum + RMSProp + bias correction. The bias correction
+compensates for the fact that m and v are initialised at 0 and thus
+biased toward 0 in early training steps. Dividing by `(1-β^t)` inflates
+the estimate to the correct scale early on.
+
+**Default hyperparameters** (Kingma & Ba, 2015):
+- η = 0.001
