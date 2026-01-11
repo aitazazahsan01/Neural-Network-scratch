@@ -340,3 +340,117 @@ Gradient descent is guaranteed to reduce loss on each step (for small enough η)
 
 ### Stochastic vs. Mini-Batch vs. Full-Batch
 
+| Method | Gradient Estimate | Pros | Cons |
+|--------|------------------|------|------|
+| SGD (1 sample) | Very noisy | Fast per step | Erratic, hard to converge |
+| Mini-batch (32-512) | Moderate noise | Balanced | Need to tune batch size |
+| Full-batch | Exact | Smooth convergence | Slow for large datasets |
+
+The noise in mini-batch SGD is actually *helpful*: it helps escape sharp
+local minima and saddle points.
+
+---
+
+## 7. Backpropagation
+
+### The Chain Rule
+
+Backpropagation is the systematic application of the chain rule to compute
+`dL/dW` for every parameter in the network.
+
+For a composition of functions `f(g(x))`:
+
+```
+d/dx f(g(x)) = f'(g(x)) · g'(x)
+```
+
+In a neural network, we have:
+
+```
+L = loss(fₗ(...f₂(f₁(X W₁ + b₁) W₂ + b₂)...))
+```
+
+This is a composition of many functions. The chain rule unrolls it layer by layer.
+
+### Backprop Through One Dense Layer
+
+**Given** that we receive `dA_l = dL/dA_l` from the layer above:
+
+**Step 1** — Gradient through activation:
+```
+dZ_l = dA_l ⊙ f_l'(Z_l)          (⊙ = element-wise product)
+```
+
+**Step 2** — Gradient w.r.t. weights:
+```
+dW_l = (A_{l-1})ᵀ · dZ_l
+
+IMPORTANT: loss.gradient() already returns the mean gradient (divided by m).
+So dZ carries the 1/m factor. We do NOT divide by m again here.
+
+Shape check:
+  A_{l-1}  : (m, n_in)    → Aᵀ : (n_in, m)
+  dZ_l     : (m, n_out)   ← already scaled by 1/m from loss
+  dW_l     : (n_in, n_out)  ✓ same shape as W_l
+```
+
+**Step 3** — Gradient w.r.t. bias:
+```
+db_l = sum(dZ_l, axis=0, keepdims=True)
+
+Again: dZ already has 1/m from the loss gradient, so we SUM (not mean).
+Shape: (1, n_out) ✓ same shape as b_l
+```
+
+**Step 4** — Gradient to pass to layer `l-1`:
+```
+dA_{l-1} = dZ_l · W_lᵀ
+
+Shape check:
+  dZ_l    : (m, n_out)
+  W_lᵀ   : (n_out, n_in)
+  dA_{l-1}: (m, n_in)  ✓ same shape as A_{l-1}
+```
+
+### The Full Backward Pass
+
+```python
+dA = loss.gradient(y, y_pred)    # Initial gradient from loss
+
+for layer in reversed(layers):
+    dA = layer.backward(dA)       # Each layer: receives dA, updates dW/db, returns dA_prev
+```
+
+Each layer's `backward()` method:
+1. Reads `A_prev` and `Z` from its cache.
+2. Computes `dZ`, `dW`, `db`.
+3. Returns `dA_prev` for the next layer down.
+
+> **Code**: `neuralnet/layers.py` `DenseLayer.backward()` — implements
+> exactly Steps 1–4 above in ~10 lines of NumPy.
+
+---
+
+## 8. Complete Worked Example
+
+Let's trace through a **XOR network** step by step with actual numbers.
+
+### Architecture
+
+```
+Layer 0 (Input):  n=2
+Layer 1 (Hidden): n=2, Tanh activation
+Layer 2 (Output): n=1, Sigmoid activation
+Loss: Binary Cross-Entropy
+```
+
+### Initial Parameters (random, small)
+
+```
+W1 = [[ 0.5, -0.3],
+      [-0.2,  0.8]]    shape (2, 2)
+
+b1 = [[0.0, 0.0]]      shape (1, 2)
+
+W2 = [[ 0.9],
+      [-0.7]]           shape (2, 1)
