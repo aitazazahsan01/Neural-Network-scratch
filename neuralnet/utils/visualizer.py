@@ -214,3 +214,9 @@ def plot_weight_histograms(
         ax.grid(True, alpha=0.3)
 
     plt.tight_layout()
+
+    if save_path:
+        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        print(f"Saved: {save_path}")
+
+    plt.show()
