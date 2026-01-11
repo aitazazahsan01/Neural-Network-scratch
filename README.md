@@ -326,3 +326,10 @@ plot_history(history, title="My Model")
 
 ---
 
+<div align="center">
+
+*Built for learning. Every line of code is a lesson.*
+
+**Start with [`THEORY.md`](THEORY.md) → then read [`layers.py`](neuralnet/layers.py)**
+
+</div>
