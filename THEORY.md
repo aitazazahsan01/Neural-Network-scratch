@@ -796,3 +796,117 @@ also get stuck in local minima or plateau regions.
 Many practitioners start with a higher lr and decay it over time:
 
 ```
+Step decay:       lr(epoch) = lr₀ · 0.1^{floor(epoch/30)}
+Exponential:      lr(epoch) = lr₀ · e^{-k·epoch}
+Cosine annealing: lr(t) = lr_min + 0.5(lr_max - lr_min)(1 + cos(πt/T))
+```
+
+(Not implemented in this project, but the framework supports it by
+passing a custom optimizer with lr already set.)
+
+---
+
+## 13. What Happens During Training
+
+Here is a complete internal picture of one epoch:
+
+### Phase 1: Shuffle
+
+```python
+idx = np.random.permutation(m)
+X_shuffled = X[idx]
+y_shuffled = y[idx]
+```
+
+Shuffling ensures each mini-batch is a different random sample.
+Without shuffling, the model might learn the ordering of the data.
+
+### Phase 2: Mini-Batch Loop
+
+For each batch `(X_b, y_b)` of size B:
+
+#### Step 1 — Forward Pass
+
+```
+A₀ = X_b                              # (B, n_in)
+Z₁ = A₀ @ W₁ + b₁                    # (B, h₁)  — layer 1
+A₁ = ReLU(Z₁)                         # (B, h₁)
+Z₂ = A₁ @ W₂ + b₂                    # (B, h₂)  — layer 2
+A₂ = ReLU(Z₂)                         # (B, h₂)
+Z₃ = A₂ @ W₃ + b₃                    # (B, K)   — output
+ŷ  = softmax(Z₃)                      # (B, K)
+L  = -Σ y log(ŷ) / B                  # scalar
+```
+
+Each layer caches `(A_prev, Z)` for backprop.
+
+#### Step 2 — Backward Pass
+
+Starting from `dL/dŷ`, propagate gradients layer by layer (reversed):
+
+```
+dL/dZ₃ = (ŷ - y) / B                 # SoftmaxCCE fused gradient
+dL/dW₃ = A₂ᵀ @ dL/dZ₃               # gradient for output weights
+dL/db₃ = mean(dL/dZ₃)               # gradient for output bias
+dL/dA₂ = dL/dZ₃ @ W₃ᵀ              # gradient to pass back
+
+dL/dZ₂ = dL/dA₂ ⊙ ReLU'(Z₂)        # gradient through activation
+dL/dW₂ = A₁ᵀ @ dL/dZ₂              # gradient for layer-2 weights
+...
+```
+
+Every layer now has `dW` and `db` computed and stored.
+
+#### Step 3 — Optimizer Update
+
+```
+for each layer l:
+    W_l ← W_l - η · dW_l      # (or Adam/momentum variant)
+    b_l ← b_l - η · db_l
+```
+
+### Phase 3: Epoch Summary
+
+After all mini-batches, compute:
+- Mean training loss over all batches.
+- Training accuracy.
+- Validation loss + accuracy (on a held-out subset, *without* training on it).
+
+Log these for learning curve visualisation.
+
+### What Learning Looks Like
+
+In the first few epochs, the loss drops rapidly as the network quickly
+learns the broad patterns in the data. Later, loss decreases more slowly
+as the network fine-tunes. Eventually:
+
+- **If underfitting**: Both train and val loss plateau at a high value.
+  → Need more capacity, more epochs, or better features.
+- **If training well**: Both losses decrease, eventually levelling off close together.
+- **If overfitting**: Train loss keeps decreasing; val loss starts increasing.
+  → Apply regularisation, reduce capacity, or stop early.
+
+---
+
+## 14. Connecting Every Formula to the Code
+
+| Mathematical Concept | Formula | Code Location |
+|---|---|---|
+| Neuron forward pass | `z = wᵀx + b` | [`layers.py`](neuralnet/layers.py) `DenseLayer.forward()` line: `Z = A_prev @ self.W + self.b` |
+| Activation | `A = f(Z)` | [`layers.py`](neuralnet/layers.py) `A = self.activation.forward(Z)` |
+| ReLU | `max(0, z)` | [`activations.py`](neuralnet/activations.py) `ReLU.forward()` |
+| Sigmoid | `1/(1+e^-z)` | [`activations.py`](neuralnet/activations.py) `Sigmoid.forward()` |
+| ReLU derivative | `1 if z>0 else 0` | [`activations.py`](neuralnet/activations.py) `ReLU.backward()` |
+| Sigmoid derivative | `A(1-A)` | [`activations.py`](neuralnet/activations.py) `Sigmoid.backward()` |
+| BCE loss | `-Σy log ŷ` | [`losses.py`](neuralnet/losses.py) `BinaryCrossEntropy.compute()` |
+| SoftmaxCCE gradient | `(A-Y)/m` | [`losses.py`](neuralnet/losses.py) `SoftmaxCCE.gradient()` |
+| Activation backward | `dZ = dA ⊙ f'(Z)` | [`layers.py`](neuralnet/layers.py) `dZ = self.activation.backward(dA, Z)` |
+| Weight gradient | `dW = A_prevᵀ dZ` (dZ has 1/m from loss) | [`layers.py`](neuralnet/layers.py) `self.dW = A_prev.T @ dZ` |
+| Bias gradient | `db = sum(dZ, axis=0)` | [`layers.py`](neuralnet/layers.py) `self.db = dZ.sum(axis=0, keepdims=True)` |
+| Backprop to prev layer | `dA_prev = dZ Wᵀ` | [`layers.py`](neuralnet/layers.py) `dA_prev = dZ @ self.W.T` |
+| SGD update | `W ← W - η·dW` | [`optimizers.py`](neuralnet/optimizers.py) `SGD.update()` |
+| Adam update | `W ← W - η·m̂/√v̂` | [`optimizers.py`](neuralnet/optimizers.py) `Adam.update()` |
+| He initialisation | `N(0, √(2/n_in))` | [`initializers.py`](neuralnet/initializers.py) `HeNormal.__call__()` |
+| Xavier init | `N(0, √(2/(n_in+n_out)))` | [`initializers.py`](neuralnet/initializers.py) `XavierNormal.__call__()` |
+| Dropout | `A · mask / (1-rate)` | [`layers.py`](neuralnet/layers.py) `DropoutLayer.forward()` |
+| One-hot encoding | `Y[i, y[i]] = 1` | [`utils/data_utils.py`](neuralnet/utils/data_utils.py) `one_hot_encode()` |
