@@ -23,3 +23,28 @@ def train_val_split(
 
     Parameters
     ----------
+    X : np.ndarray, shape (m, ...)
+    y : np.ndarray, shape (m, ...)
+    val_fraction : float
+        Fraction of samples to use for validation. Default 0.2 (20%).
+    shuffle : bool
+        Whether to shuffle before splitting.
+    seed : int or None
+        Random seed for reproducibility.
+
+    Returns
+    -------
+    (X_train, X_val, y_train, y_val)
+    """
+    if seed is not None:
+        np.random.seed(seed)
+
+    m = X.shape[0]
+    idx = np.random.permutation(m) if shuffle else np.arange(m)
+
+    n_val = int(m * val_fraction)
+    val_idx   = idx[:n_val]
+    train_idx = idx[n_val:]
+
+    return (
+        to_array(X[train_idx]),
