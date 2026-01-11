@@ -187,3 +187,30 @@ def plot_weight_histograms(
     dense_layers = [
         (i, l) for i, l in enumerate(model.layers)
         if isinstance(l, DenseLayer) and l._built
+    ]
+
+    if not dense_layers:
+        print("No built Dense layers to plot.")
+        return
+
+    n = len(dense_layers)
+    fig, axes = plt.subplots(1, n, figsize=(5 * n, 4), sharey=False)
+    if n == 1:
+        axes = [axes]
+
+    fig.suptitle(title, fontsize=13, fontweight="bold")
+
+    for ax, (idx, layer) in zip(axes, dense_layers):
+        weights = layer.W.ravel()
+        ax.hist(weights, bins=40, color="#5C6BC0", edgecolor="white", linewidth=0.3)
+        ax.axvline(0, color="red", linestyle="--", linewidth=1, label="zero")
+        ax.set_title(
+            f"Layer {idx + 1}  ({layer.n_in}→{layer.n_out})\n"
+            f"σ={weights.std():.4f}  μ={weights.mean():.4f}"
+        )
+        ax.set_xlabel("Weight value")
+        ax.set_ylabel("Count")
+        ax.legend(fontsize=8)
+        ax.grid(True, alpha=0.3)
+
+    plt.tight_layout()
