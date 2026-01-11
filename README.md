@@ -121,3 +121,44 @@ flowchart TD
 ## Optimizers — A Progressive Story
 
 ```mermaid
+graph LR
+    A[SGD\nW ← W - η·dW] -->|add momentum| B[SGD + Momentum\nv ← βv + dW\nW ← W - η·v]
+    B -->|adaptive lr| C[RMSProp\ns ← βs + dW²\nW ← W - η·dW/√s]
+    C -->|both together + bias fix| D[Adam ⭐\nm̂/√v̂ with bias correction]
+
+    style A fill:#21262d,color:#8b949e,stroke:#30363d
+    style B fill:#21262d,color:#e3b341,stroke:#d29922
+    style C fill:#21262d,color:#58a6ff,stroke:#1f6feb
+    style D fill:#238636,color:#fff,stroke:#2ea043
+```
+
+Each optimizer is implemented from scratch with its full derivation in [`optimizers.py`](neuralnet/optimizers.py).
+
+---
+
+## Activation Functions
+
+```mermaid
+graph LR
+    subgraph "Hidden Layers"
+        R[ReLU\nmax 0,z\nf'= 1 if z>0\nelse 0]
+        LR[LeakyReLU\nαz if z≤0\nFixes dying ReLU]
+        T[Tanh\ne^z - e^-z / e^z + e^-z\nZero-centred]
+    end
+    subgraph "Output Layer"
+        S[Sigmoid\n1 / 1+e^-z\nBinary classification]
+        SM[Softmax\ne^zk / Σe^zj\nMulti-class]
+    end
+
+    style R fill:#1f6feb,color:#fff,stroke:none
+    style LR fill:#388bfd,color:#fff,stroke:none
+    style T fill:#8957e5,color:#fff,stroke:none
+    style S fill:#da3633,color:#fff,stroke:none
+    style SM fill:#238636,color:#fff,stroke:none
+```
+
+---
+
+## Results
+
+### ✅ Gradient Check — All 18 Parameters Verified
