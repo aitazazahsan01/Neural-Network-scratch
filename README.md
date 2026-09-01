@@ -12,6 +12,9 @@
 [![MNIST Accuracy](https://img.shields.io/badge/MNIST%20Accuracy-97.03%25-brightgreen?style=flat-square)](#results)
 [![Gradients Verified](https://img.shields.io/badge/Gradients-Numerically%20Verified-blueviolet?style=flat-square)](#verification)
 
+![Neural Network Architecture](assets/nn_architecture.jpg)
+![Backpropagation Flow](assets/backprop_flow.jpg)
+
 </div>
 
 ---
